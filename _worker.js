@@ -29,7 +29,7 @@ export default {
       vpsinfo = env.VPSINFO || vpsinfo;
       tgid = env.TGID || tgid;
       tgtoken = env.TGTOKEN || tgtoken;
-      days = parseInt(env.DAYS || days);
+      days = parseInt(env.DAYS || days, 10);
       
       // 读取变量VPSINFO中的VPS数据，格式为json
       if (!vpsinfo) {
