@@ -1,9 +1,9 @@
 // 定义外部变量
-let sitename = "VPS到期监控"; //变量名SITENAME，自定义站点名称，默认为“域名监控”
-let vpsinfo = ""; //变量名VPSINFO，填入域名信息json文件直链，必须设置的变量
-let tgid = ""; //变量名TGID，填入TG机器人ID，不需要提醒则不填
-let tgtoken = ""; //变量名TGTOKEN，填入TG的TOKEN，不需要提醒则不填
-let days = "7"; //变量名DAYS，提前几天发送TG提醒，默认为7天，必须为大于0的整数
+let sitename = "VPS到期监控"; // 变量名SITENAME，自定义站点名称，默认为“域名监控”
+let vpsinfo = ""; // 变量名VPSINFO，填入域名信息json文件直链，必须设置的变量
+let tgid = ""; // 变量名TGID，填入TG机器人ID，不需要提醒则不填
+let tgtoken = ""; // 变量名TGTOKEN，填入TG的TOKEN，不需要提醒则不填
+let days = "7"; // 变量名DAYS，提前几天发送TG提醒，默认为7天，必须为大于0的整数
 
 async function sendtgMessage(message, tgid, tgtoken) {
     if (!tgid || !tgtoken) return;    
@@ -21,7 +21,7 @@ async function sendtgMessage(message, tgid, tgtoken) {
     } catch (error) {
       console.error('Telegram 消息推送失败:', error);
     }
-  }  
+}  
 
 export default {
     async fetch(request, env) {
@@ -29,7 +29,8 @@ export default {
       vpsinfo = env.VPSINFO || vpsinfo;
       tgid = env.TGID || tgid;
       tgtoken = env.TGTOKEN || tgtoken;
-      days = parseInt(env.DAYS || days);
+      days = parseInt(env.DAYS || days, 10);
+      
       // 读取变量VPSINFO中的VPS数据，格式为json
       if (!vpsinfo) {
         return new Response("VPSINFO 环境变量未设置", { status: 500 });
@@ -41,18 +42,19 @@ export default {
           throw new Error('Network response was not ok');
         }
         const data = await response.json();
-        if (!Array.isArray(vpsinfo)) {
+        if (!Array.isArray(data)) {
           throw new Error('JSON 数据格式不正确');
         }
+        vpsinfo = data;
 
         // 检查即将到期的VPS并发送 Telegram 消息
-        for (const country of vpsinfo) {
-          const expirationDate = new Date(address.expirationDate);
+        for (const info of vpsinfo) {
+          const expirationDate = new Date(info.expirationDate);
           const today = new Date();
           const daysRemaining = Math.ceil((expirationDate - today) / (1000 * 60 * 60 * 24));
   
           if (daysRemaining > 0 && daysRemaining <= days) {
-            const message = `VPS ${country.country} ${country.system} ${country.type} 将在 ${daysRemaining} 天后过期。过期日期：${country.expirationDate}`;
+            const message = `VPS ${info.country} ${info.system} ${info.type} 将在 ${daysRemaining} 天后过期。过期日期：${info.expirationDate}`;
             await sendtgMessage(message, tgid, tgtoken);
           }
         }
@@ -67,9 +69,9 @@ export default {
         return new Response("无法获取或解析VPS的 json 文件", { status: 500 });
       }
     }
-  };
+};
 
-  async function generateHTML(vpsinfo, SITENAME) {
+async function generateHTML(vpsinfo, SITENAME) {
     const rows = await Promise.all(vpsinfo.map(async info => {
       const registrationDate = new Date(info.registrationDate);
       const expirationDate = new Date(info.expirationDate);
@@ -214,4 +216,4 @@ export default {
       </body>
       </html>
     `;
-  }
+}
