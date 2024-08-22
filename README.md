@@ -14,11 +14,11 @@ fork本仓库，在cf中创建一个pages，链接到你fork的仓库，点击�
 ## 变量设置
 | 变量名 | 填写示例 | 说明 | 是否必填 | 
 | ------ | ------- | ------ | ------ |
-| SITENAME | 我的域名监控 | 自定义站点名称，默认为`域名监控` | 否 |
-| DOMAINS | `https://raw.githubusercontent.com/用户名/仓库名/main/domains.json` | 域名信息json文件 | 是 |
-| TGID | 6522584277 | TG机器人ID | 否 |
-| TGTOKEN | 6094768843:BBCrcWzLbXghYU8vdtt0jyESjpL9-uKM7p8 | TG机器人TOKEN | 否 |
-| DAYS | 7 | 提前几天发送TG提醒，必须是整数 | 否 |
+| SITENAME | VPS到期监控 | 自定义站点名称，默认为`VPS到期监控` | 否 |
+| DOMAINS | `https://raw.githubusercontent.com/用户名/仓库名/main/vpsinfo.json` | 替换为你自己的json文件 | 是 |
+| TGID | 652***4277 | TG机器人ID，不需要通知可不填 | 否 |
+| TGTOKEN | 60947***43:BBCrcWzLbXghYU8vdtt0jyESjpL9-uKM7p8 | TG机器人TOKEN，不需要通知可不填 | 否 |
+| DAYS | 5 | 提前几天发送TG提醒，必须是整数，默认为`5` | 否 |
 
 ## 域名信息json文件格式
 **示例**，请修改其中信息为你自己的vps
