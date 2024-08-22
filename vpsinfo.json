@@ -1,0 +1,15 @@
+[
+  { "country": "香港", "system": "Akile", "asn": "AS61112 Akile", "type": "VPS", "registrationDate": "2024-04-12", "expirationDate": "2025-04-12", "systemURL": "https://akile.io" },
+  { "country": "印尼", "system": "谷歌", "asn": "AS396982 Google", "type": "VPS", "registrationDate": "2024-05-16", "expirationDate": "2024-11-15", "systemURL": "https://cloud.google.com" },
+  { "country": "日本", "system": "谷歌", "asn": "AS396982 Google", "type": "VPS", "registrationDate": "2024-05-16", "expirationDate": "2024-11-15", "systemURL": "https://cloud.google.com" },
+  { "country": "新加坡", "system": "谷歌", "asn": "AS396982 Google", "type": "VPS", "registrationDate": "2024-05-16", "expirationDate": "2024-11-15", "systemURL": "https://cloud.google.com" },
+  { "country": "台湾", "system": "谷歌", "asn": "AS396982 Google", "type": "VPS", "registrationDate": "2024-05-16", "expirationDate": "2024-11-15", "systemURL": "https://cloud.google.com" },
+  { "country": "新加坡", "system": "亚马逊", "asn": "AS16509 Amazon", "type": "VPS", "registrationDate": "2024-04-18", "expirationDate": "2025-04-18", "systemURL": "https://aws.amazon.com/cn" },
+  { "country": "巴西", "system": "DCI-FD5", "asn": "AS31898 Oracle", "type": "NAT", "registrationDate": "2024-08-19", "expirationDate": "2024-08-25", "systemURL": "https://dash.duckyci.com" },
+  { "country": "巴西", "system": "DCI-FD12", "asn": "AS31898 Oracle", "type": "NAT", "registrationDate": "2024-08-19", "expirationDate": "2024-08-25", "systemURL": "https://dash.duckyci.com" },
+  { "country": "阿联酋", "system": "DCI-FD2", "asn": "AS31898 Oracle", "type": "NAT", "registrationDate": "2024-03-16", "expirationDate": "2024-11-16", "systemURL": "https://dash.duckyci.com" },
+  { "country": "巴西", "system": "智简魔方", "asn": "AS31898 Oracle", "type": "NAT", "registrationDate": "2024-08-18", "expirationDate": "2024-09-18", "systemURL": "https://cloud.cpu.red" },
+  { "country": "波兰", "system": "Serv00-S3", "asn": "AS57367 Atman", "type": "容器", "registrationDate": "2024-07-12", "expirationDate": "2034-08-20", "systemURL": "https://panel3.serv00.com" },
+  { "country": "波兰", "system": "Serv00-S8", "asn": "AS57367 Atman", "type": "容器", "registrationDate": "2024-08-10", "expirationDate": "2034-08-20", "systemURL": "https://panel8.serv00.com" },
+  { "country": "波兰", "system": "Serv00-S9", "asn": "AS57367 Atman", "type": "容器", "registrationDate": "2024-08-18", "expirationDate": "2034-08-20", "systemURL": "https://panel9.serv00.com" }
+]
