@@ -64,7 +64,7 @@ export default {
         });
       } catch (error) {
         console.error("Fetch error:", error);
-        return new Response(""无法获取或解析VPS的 json 文件"", { status: 500 });
+        return new Response("无法获取或解析VPS的 json 文件", { status: 500 });
       }
     }
   };
