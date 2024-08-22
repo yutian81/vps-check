@@ -70,43 +70,6 @@ async function sendtgMessage(message, tgid, tgtoken) {
     }
   };
 
-// 获取国家信息（中文名和国旗）
-async function getCountryInfo(country) {
-    if (!country) return { name: '未知', flag: '' };
-  
-    try {
-      // 获取国家数据
-      const response = await fetch(`https://restcountries.com/v3.1/alpha/${country}`);
-      const data = await response.json();
-      const cca2 = data[0].cca2.toLowerCase();
-      const translations = data[0].translations || {};
-      const chineseName = translations.zho ? translations.zho.common : '';
-  
-      if (chineseName) {
-        // 如果有中文名，返回中文名和国旗
-        const flagUrl = `https://flagcdn.com/16x12/${cca2}.png`;
-        return {
-          name: chineseName,
-          flag: `<img src="${flagUrl}" alt="${chineseName} flag" style="vertical-align: middle;">`
-        };
-      } else {
-        // 如果没有中文名，翻译为中文并返回中文名和国旗
-        const translationResponse = await fetch(`https://api.mymemory.translated.net/get?q=${country}&langpair=en|zh`);
-        const translationData = await translationResponse.json();
-        const translatedName = translationData.responseData.translatedText || country;
-        
-        const flagUrl = `https://flagcdn.com/16x12/${cca2}.png`;
-        return {
-          name: translatedName,
-          flag: `<img src="${flagUrl}" alt="${translatedName} flag" style="vertical-align: middle;">`
-        };
-      }
-    } catch (error) {
-      console.error("获取国家信息失败：", error);
-      return { name: '未知', flag: '' };
-    }
-  }
-  
   async function generateHTML(vpsinfo, SITENAME) {
     const rows = await Promise.all(vpsinfo.map(async info => {
       const registrationDate = new Date(info.registrationDate);
@@ -119,14 +82,14 @@ async function getCountryInfo(country) {
       const isExpired = today > expirationDate;
       const statusColor = isExpired ? '#e74c3c' : '#2ecc71';
       const statusText = isExpired ? '已过期' : '正常';
-      const countryInfo = await getCountryInfo(info.country);
-  
+
       return `
         <tr>
           <td><span class="status-dot" style="background-color: ${statusColor};" title="${statusText}"></span></td>
-          <td>${countryInfo.flag} ${countryInfo.name}</td>
+          <td>${info.country}</td>
           <td><a href="${info.systemURL}" target="_blank">${info.system}</a></td>
           <td>${info.asn}</td>
+          <td>${info.type}</td>
           <td>${info.registrationDate}</td>
           <td>${info.expirationDate}</td>
           <td>${isExpired ? '已过期' : daysRemaining + ' 天'}</td>
@@ -233,8 +196,9 @@ async function getCountryInfo(country) {
                   <th>国家/地区</th>
                   <th>注册商</th>
                   <th>ASN号</th>
+                  <th>类型</th>
                   <th>注册时间</th>
-                  <th>过期时间</th>
+                  <th>续期时间</th>
                   <th>剩余天数</th>
                   <th>使用进度</th>
                 </tr>
