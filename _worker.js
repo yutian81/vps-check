@@ -6,14 +6,12 @@ let tgtoken = ""; //变量名TGTOKEN，填入TG的TOKEN，不需要提醒则不�
 let days = "7"; //变量名DAYS，提前几天发送TG提醒，默认为7天，必须为大于0的整数
 
 async function sendtgMessage(message, tgid, tgtoken) {
-    if (!tgid || !tgtoken) return;
-    
+    if (!tgid || !tgtoken) return;    
     const url = `https://api.telegram.org/bot${tgtoken}/sendMessage`;
     const params = {
       chat_id: tgid,
       text: message,
-    };
-  
+    };  
     try {
       await fetch(url, {
         method: 'POST',
@@ -23,16 +21,16 @@ async function sendtgMessage(message, tgid, tgtoken) {
     } catch (error) {
       console.error('Telegram 消息推送失败:', error);
     }
-  }
-  
-  export default {
+  }  
+
+export default {
     async fetch(request, env) {
       sitename = env.SITENAME || sitename;
       vpsinfo = env.VPSINFO || vpsinfo;
       tgid = env.TGID || tgid;
       tgtoken = env.TGTOKEN || tgtoken;
       days = parseInt(env.DAYS || days);
-      
+      // 读取变量VPSINFO中的VPS数据，格式为json
       if (!vpsinfo) {
         return new Response("VPSINFO 环境变量未设置", { status: 500 });
       }
@@ -43,29 +41,30 @@ async function sendtgMessage(message, tgid, tgtoken) {
           throw new Error('Network response was not ok');
         }
         const data = await response.json();
-        if (!Array.isArray(data)) {
+        if (!Array.isArray(vpsinfo)) {
           throw new Error('JSON 数据格式不正确');
         }
-        vpsinfo = data;
-  
-        for (const address of vpsinfo) {
+
+        // 检查即将到期的VPS并发送 Telegram 消息
+        for (const country of vpsinfo) {
           const expirationDate = new Date(address.expirationDate);
           const today = new Date();
           const daysRemaining = Math.ceil((expirationDate - today) / (1000 * 60 * 60 * 24));
   
           if (daysRemaining > 0 && daysRemaining <= days) {
-            const message = `VPS ${address.address} 将在 ${daysRemaining} 天后过期。过期日期：${address.expirationDate}`;
+            const message = `VPS ${country.country} ${country.system} ${country.type} 将在 ${daysRemaining} 天后过期。过期日期：${country.expirationDate}`;
             await sendtgMessage(message, tgid, tgtoken);
           }
         }
   
+        // 处理 generateHTML 的返回值
         const htmlContent = await generateHTML(vpsinfo, sitename);
         return new Response(htmlContent, {
           headers: { 'Content-Type': 'text/html' },
         });
       } catch (error) {
         console.error("Fetch error:", error);
-        return new Response("无法获取或解析vpsinfo的json文件", { status: 500 });
+        return new Response(""无法获取或解析VPS的 json 文件"", { status: 500 });
       }
     }
   };
@@ -210,7 +209,7 @@ async function sendtgMessage(message, tgid, tgtoken) {
           </div>
         </div>
         <div class="footer">
-          Powered by yutian81 | <a href="https://github.com/yutian81/vps-check">作者的 GITHUB</a>
+          Powered by yutian81 | <a href="https://github.com/yutian81/vps-check">Fork for Github</a>
         </div>
       </body>
       </html>
