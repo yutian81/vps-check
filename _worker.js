@@ -3,7 +3,7 @@ let sitename = "VPS到期监控"; // 变量名SITENAME，自定义站点名称�
 let vpsinfo = ""; // 变量名VPSINFO，填入域名信息json文件直链，必须设置的变量
 let tgid = ""; // 变量名TGID，填入TG机器人ID，不需要提醒则不填
 let tgtoken = ""; // 变量名TGTOKEN，填入TG的TOKEN，不需要提醒则不填
-let days = "7"; // 变量名DAYS，提前几天发送TG提醒，默认为7天，必须为大于0的整数
+let days = "3"; // 变量名DAYS，提前几天发送TG提醒，默认为3天，必须为大于0的整数
 
 async function sendtgMessage(message, tgid, tgtoken) {
     if (!tgid || !tgtoken) return;    
@@ -29,7 +29,7 @@ export default {
         vpsinfo = env.VPSINFO || vpsinfo;
         tgid = env.TGID || tgid;
         tgtoken = env.TGTOKEN || tgtoken;
-        days = parseInt(env.DAYS || days, 10);
+        days = parseInt(env.DAYS || days);
 
         if (!vpsinfo) {
             return new Response("VPSINFO 环境变量未设置", { status: 500 });
@@ -46,17 +46,19 @@ export default {
             }
             vpsinfo = data;
 
-            const today = new Date().toDateString();
-            if (lastSentDate === today) {
-                // 如果今天已经发送过提醒，则不再发送
+            const today = new Date();
+            const lastSentDate = await env.KV.get('lastSentDate'); // 从 KV 读取上次发送日期
+
+            if (lastSentDate === today.toDateString()) {
                 console.log("今日已发送提醒，跳过");
                 const htmlContent = await generateHTML(vpsinfo, sitename);
                 return new Response(htmlContent, {
                     headers: { 'Content-Type': 'text/html' },
                 });
             }
-            lastSentDate = today;
-            
+
+            await env.KV.put('lastSentDate', today.toDateString()); // 更新 KV 中的发送日期
+
             // 检查即将到期的VPS并发送 Telegram 消息
             for (const info of vpsinfo) {
                 const expirationDate = new Date(info.expirationDate);
@@ -67,6 +69,7 @@ export default {
                     await sendtgMessage(message, tgid, tgtoken);
                 }
             }
+
             // 生成 HTML 内容
             const htmlContent = await generateHTML(vpsinfo, sitename);
             return new Response(htmlContent, {
