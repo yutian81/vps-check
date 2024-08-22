@@ -54,7 +54,7 @@ export default {
           const daysRemaining = Math.ceil((expirationDate - today) / (1000 * 60 * 60 * 24));
   
           if (daysRemaining > 0 && daysRemaining <= days) {
-            const message = `VPS ${info.country} ${info.system} ${info.type} 将在 ${daysRemaining} 天后过期。过期日期：${info.expirationDate}`;
+            const message = `[VPS] ${info.country} ${info.system} ${info.type} 将在 ${daysRemaining} 天后到期。到期日期：${info.expirationDate}`;
             await sendtgMessage(message, tgid, tgtoken);
           }
         }
