@@ -3,7 +3,7 @@ let sitename = "VPS到期监控"; // 变量名SITENAME，自定义站点名称�
 let vpsinfo = ""; // 变量名VPSINFO，填入域名信息json文件直链，必须设置的变量
 let tgid = ""; // 变量名TGID，填入TG机器人ID，不需要提醒则不填
 let tgtoken = ""; // 变量名TGTOKEN，填入TG的TOKEN，不需要提醒则不填
-let days = "7"; // 变量名DAYS，提前几天发送TG提醒，默认为7天，必须为大于0的整数
+let days = "3"; // 变量名DAYS，提前几天发送TG提醒，默认为3天，必须为大于0的整数
 
 async function sendtgMessage(message, tgid, tgtoken) {
     if (!tgid || !tgtoken) return;    
@@ -29,7 +29,7 @@ export default {
       vpsinfo = env.VPSINFO || vpsinfo;
       tgid = env.TGID || tgid;
       tgtoken = env.TGTOKEN || tgtoken;
-      days = parseInt(env.DAYS || days, 10);
+      days = parseInt(env.DAYS || days);
       
       // 读取变量VPSINFO中的VPS数据，格式为json
       if (!vpsinfo) {
@@ -54,7 +54,7 @@ export default {
           const daysRemaining = Math.ceil((expirationDate - today) / (1000 * 60 * 60 * 24));
   
           if (daysRemaining > 0 && daysRemaining <= days) {
-            const message = `VPS ${info.country} ${info.system} ${info.type} 将在 ${daysRemaining} 天后过期。过期日期：${info.expirationDate}`;
+            const message = `[VPS] ${info.country} ${info.system} ${info.type} 将在 ${daysRemaining} 天后到期。到期日期：${info.expirationDate}`;
             await sendtgMessage(message, tgid, tgtoken);
           }
         }
