@@ -1,5 +1,5 @@
 [
-  { "country": "🇭🇰 香港", "system": "Akile", "asn": "61112", "registrationDate": "2024-04-12", "expirationDate": "2025-04-12", "systemURL": "https://akile.io" },
-  { "country": "🇸🇬 新加坡", "system": "亚马逊AWS", "asn": "16509", "registrationDate": "2024-04-18", "expirationDate": "2025-04-18", "systemURL": "https://aws.amazon.com/cn" },
-  { "country": "🇹🇼 台湾", "system": "谷歌GCP", "asn": "396982", "registrationDate": "2024-05-16", "expirationDate": "2024-11-15", "systemURL": "https://cloud.google.com" }
+  { "country": "香港", "system": "Akile", "asn": "61112", "registrationDate": "2024-04-12", "expirationDate": "2025-04-12", "systemURL": "https://akile.io" },
+  { "country": "新加坡", "system": "亚马逊AWS", "asn": "16509", "registrationDate": "2024-04-18", "expirationDate": "2025-04-18", "systemURL": "https://aws.amazon.com/cn" },
+  { "country": "台湾", "system": "谷歌GCP", "asn": "396982", "registrationDate": "2024-05-16", "expirationDate": "2024-11-15", "systemURL": "https://cloud.google.com" }
 ]
