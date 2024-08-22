@@ -3,7 +3,7 @@ let sitename = "VPS到期监控"; // 变量名SITENAME，自定义站点名称�
 let vpsinfo = ""; // 变量名VPSINFO，填入域名信息json文件直链，必须设置的变量
 let tgid = ""; // 变量名TGID，填入TG机器人ID，不需要提醒则不填
 let tgtoken = ""; // 变量名TGTOKEN，填入TG的TOKEN，不需要提醒则不填
-let days = "3"; // 变量名DAYS，提前几天发送TG提醒，默认为3天，必须为大于0的整数
+let days = "5"; // 变量名DAYS，提前几天发送TG提醒，默认为5天，必须为大于0的整数
 
 async function sendtgMessage(message, tgid, tgtoken) {
     if (!tgid || !tgtoken) return;    
