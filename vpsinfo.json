@@ -9,5 +9,5 @@
   { "country": "巴西", "system": "DCI-FD5", "asn": "AS31898 Oracle", "type": "NAT", "registrationDate": "2024-08-19", "expirationDate": "2024-11-16", "systemURL": "https://dash.duckyci.com" },
   { "country": "巴西", "system": "DCI-FD12", "asn": "AS31898 Oracle", "type": "NAT", "registrationDate": "2024-08-18", "expirationDate": "2024-09-16", "systemURL": "https://dash.duckyci.com" },
   { "country": "阿联酋", "system": "DCI-FD2", "asn": "AS31898 Oracle", "type": "NAT", "registrationDate": "2024-03-16", "expirationDate": "2024-11-16", "systemURL": "https://dash.duckyci.com" },
-  { "country": "巴西", "system": "智简魔方", "asn": "AS31898 Oracle", "type": "NAT", "registrationDate": "2024-08-18", "expirationDate": "2024-09-16", "systemURL": "https://cloud.cpu.red" }
+  { "country": "巴西", "system": "智简魔方", "asn": "AS31898 Oracle", "type": "NAT", "registrationDate": "2024-08-18", "expirationDate": "2025-03-18", "systemURL": "https://cloud.cpu.red" }
 ]
