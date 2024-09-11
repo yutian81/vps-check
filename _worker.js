@@ -211,7 +211,7 @@ async function generateHTML(vpsinfo, SITENAME) {
           </div>
         </div>
         <div class="footer">
-          Powered by yutian81 | <a href="https://github.com/yutian81/vps-check">Fork for Github</a>
+          Powered by yutian81 | <a href="https://github.com/yutian81/vps-check" style="color: inherit; text-decoration: none;">Fork from Github</a>
         </div>
       </body>
       </html>
