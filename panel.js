@@ -30,7 +30,6 @@ async function handleVpsModification(vpsinfo, action, newVpsData = null) {
     } else if (action === 'delete' && newVpsData) {
         vpsinfo = vpsinfo.filter(vps => vps.system !== newVpsData.system);
     }
-    // 可将新的vpsinfo上传或保存至远程数据库或文件
     return vpsinfo;
 }
 
@@ -44,6 +43,18 @@ export default {
         tgtoken = env.TGTOKEN || tgtoken;
         days = parseInt(env.DAYS || days, 10);
 
+        // 从 KV 中获取 VPS 信息
+        try {
+            vpsinfo = await env.KV_VPS.get("vpsinfo");
+            if (!vpsinfo) {
+                return new Response("KV 中的 vpsinfo 未设置", { status: 500 });
+            }
+            vpsinfo = JSON.parse(vpsinfo);
+        } catch (error) {
+            console.error("从 KV 获取 vpsinfo 失败:", error);
+            return new Response("无法从 KV 获取 VPS 信息", { status: 500 });
+        }
+
         // 处理不同路径请求
         if (pathname === '/admin') {
             if (request.method === 'POST') {
@@ -51,7 +62,10 @@ export default {
                 const requestData = await request.json();
                 const { action, newVpsData } = requestData;
                 vpsinfo = await handleVpsModification(vpsinfo, action, newVpsData);
+                // 更新 KV 中的 vpsinfo
+                await env.KV_VPS.put("vpsinfo", JSON.stringify(vpsinfo));
             }
+ 
             // 返回管理面板的 HTML
             const adminHtml = await generateAdminHTML(vpsinfo, sitename);
             return new Response(adminHtml, {
@@ -87,14 +101,14 @@ export default {
                 }
             }
 
-            // 处理 generateHTML 的返回值
+            // 生成用户查看的 HTML 页面
             const htmlContent = await generateHTML(vpsinfo, sitename);
             return new Response(htmlContent, {
                 headers: { 'Content-Type': 'text/html' },
             });
         } catch (error) {
-            console.error("Fetch error:", error);
-            return new Response("无法获取或解析VPS的 json 文件", { status: 500 });
+            console.error("处理 VPS 数据时出错:", error);
+            return new Response("处理 VPS 数据时出错", { status: 500 });
         }
     }
 };
@@ -286,32 +300,3 @@ async function generateHTML(vpsinfo, SITENAME) {
     </html>
     `;
 }
-
-// 根据国家信息获取国旗
-//async function getFlag(country) {
-//    const flags = {
-//        "中国": "🇨🇳",
-//        "美国": "🇺🇸",
-//        "日本": "🇯🇵",
-//        "德国": "🇩🇪",
-//    };
-
-//    if (country in flags) {
-//        return flags[country];
-//    }
-
-//    // 翻译并查找国旗
-//    const cn = await translateCountryToChinese(country);
-//    return flags[cn] || '🏳';
-//}
-
-// 翻译国家名为中文
-//async function translateCountryToChinese(country) {
-//    const translations = {
-//        "China": "中国",
-//        "United States": "美国",
-//        "Japan": "日本",
-//        "Germany": "德国",
-//    };
-//    return translations[country] || country;
-//}
