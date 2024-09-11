@@ -231,11 +231,9 @@ async function generateHTML(vpsinfo, SITENAME) {
         const daysRemaining = Math.ceil((expirationDate - today) / (1000 * 60 * 60 * 24));
         const daysColor = daysRemaining <= 5 ? 'red' : 'black';
         const favURL = "https://yuzong.nyc.mn/?url=" + info.system.replace(/^https?:\/\//, '');
-        const flag = await getFlag(info.country);
-
         return `
         <tr>
-            <td>${flag} ${info.country}</td>
+            <td>${info.country}</td>
             <td><img src="${favURL}" alt="favicon" width="16" height="16"> ${info.system}</td>
             <td>${info.asn}</td>
             <td>${info.type}</td>
