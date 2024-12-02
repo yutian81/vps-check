@@ -38,6 +38,3 @@
 ## 相关截图
 TG通知截图  
 ![TG提醒](https://fastly.jsdelivr.net/gh/yutian81/yutian81.github.io@master/assets/images/17243062899351724306289601.png)
-
-监控页面截图  
-![监控页面](https://fastly.jsdelivr.net/gh/yutian81/yutian81.github.io@master/assets/images/17243063439351724306343197.png)
