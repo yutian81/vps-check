@@ -87,11 +87,15 @@ export default {
                 const daysRemaining = Math.ceil((endday - today) / (1000 * 60 * 60 * 24));
 
                 if (daysRemaining > 0 && daysRemaining <= days) {
-                    const message = `[VPS] ${info.country_code} | ${info.city} 将在 ${daysRemaining} 天后到期。IP：${info.ip}，到期日期：${endday}`;
-
-                    // 在发送通知之前检查是否已经发送过通知
+                    const message = `🚨 [VPS到期提醒] 🚨
+                    ====================
+                    🌍 国家: ${info.country_code} | 城市: ${info.city}
+                    💻 IP 地址: ${info.ip}
+                    ⏳ 剩余时间: ${daysRemaining} 天
+                    📅 到期日期: ${info.endday}
+                    ⚠️ 点击续期：[${info.store}](${info.storeURL})`;
+                                   
                     const lastSent = await env.VPS_TG_KV.get(info.ip);  // 检查是否已发送过通知
-
                     if (!lastSent || (new Date(lastSent).toISOString().split('T')[0] !== today.toISOString().split('T')[0])) {
                         await sendtgMessage(message, tgid, tgtoken);
                         await env.VPS_TG_KV.put(info.ip, new Date().toISOString());  // 更新 KV 存储的发送时间
