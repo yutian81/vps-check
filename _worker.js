@@ -29,7 +29,7 @@ async function sendtgMessage(message, tgid, tgtoken) {
 }
 
 // 获取IP的国家、城市、ASN信息
-async function ipinfo_query(vpsinfo) {
+async function ipinfo_query(vpsdata) {
     const results = await Promise.all(vpsdata.map(async ({ ip }) => {
         const apiUrl = `https://ip.eooce.com/${ip}`;
         try {
