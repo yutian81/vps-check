@@ -29,22 +29,9 @@ async function sendtgMessage(message, tgid, tgtoken) {
 }
 
 // 获取IP的国家、城市、ASN信息
-async function ipinfo() {
-    vpsinfo = env.VPSINFO || vpsinfo;
-    if (!vpsinfo) {
-        return new Response("VPSINFO 环境变量未设置", { status: 500 });
-    }
-
+async function ipinfo_query(vpsinfo) {
     try {
-        const response = await fetch(vpsinfo);
-        if (!response.ok) {
-            console.error('获取 VPSINFO 数据失败');
-            return null;
-        }        
-        const vpsInfoJson = await response.json(); // 解析 JSON 数据
-        
-        // 循环遍历每个 IP 地址，查询并获取相应的信息
-        for (const { ip } of vpsInfoJson) {
+        for (const { ip } of vpsinfo) {
             const apiUrl = `https://ip.eooce.com/${ip}`;
             try {
                 const ipResponse = await fetch(apiUrl);
@@ -88,6 +75,11 @@ export default {
         }
         vpsinfo = data;
 
+        const ipdata = await ipinfo_query(vpsinfo); // 传递 vpsinfo 数据
+            if (ipdata) {
+                const { ip, country_code, city, asn } = ipdata;
+            }
+
         // 检查即将到期的VPS并发送 Telegram 消息
         for (const info of vpsinfo) {
           const endday = new Date(info.endday);
@@ -95,15 +87,15 @@ export default {
           const daysRemaining = Math.ceil((endday - today) / (1000 * 60 * 60 * 24));
   
           if (daysRemaining > 0 && daysRemaining <= days) {
-            const message = `[VPS] ${info.country_code} ${info.city} 将在 ${daysRemaining} 天后到期。IP：${info.ip}，到期日期：${info.endday}`;
+            const message = `[VPS] ${ipdata.country_code} | ${ipdata.city} 将在 ${daysRemaining} 天后到期。IP：${ipdata.ip}，到期日期：${info.endday}`;
             
             // 在发送通知之前检查是否已经发送过通知
-            const lastSent = await env.VPS_TG_KV.get(info.ip); // 使用KV存储检查上次发送的状态
+            const lastSent = await env.VPS_TG_KV.get(ipdata.ip); // 使用KV存储检查上次发送的状态
             
             if (!lastSent || (new Date(lastSent).toISOString().split('T')[0] !== today.toISOString().split('T')[0])) {
               // 如果没有记录，或者记录的时间不是今天，则发送通知并更新 KV
               await sendtgMessage(message, tgid, tgtoken);
-              await env.VPS_TG_KV.put(info.ip, new Date().toISOString()); // 更新 KV 存储的发送时间
+              await env.VPS_TG_KV.put(ipdata.ip, new Date().toISOString()); // 更新 KV 存储的发送时间
             }
           }
         }
