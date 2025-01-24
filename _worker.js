@@ -30,7 +30,7 @@ async function sendtgMessage(message, tgid, tgtoken) {
 
 // 获取IP的国家、城市、ASN信息
 async function ipinfo_query(vpsjson) {
-    const results = await Promise.all(vpsjson.map(async ({ ip }) => {
+    const ipjson = await Promise.all(vpsjson.map(async ({ ip }) => {
         const apiUrl = `https://ip.eooce.com/${ip}`;
         try {
             const ipResponse = await fetch(apiUrl);
@@ -46,7 +46,7 @@ async function ipinfo_query(vpsjson) {
             return null;
         }
     }));
-    return results.filter(info => info !== null);  // 过滤掉请求失败的IP信息
+    return ipjson.filter(info => info !== null);  // 过滤掉请求失败的IP信息
 }
 
 export default {
