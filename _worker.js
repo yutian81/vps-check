@@ -30,100 +30,108 @@ async function sendtgMessage(message, tgid, tgtoken) {
 
 // 获取IP的国家、城市、ASN信息
 async function ipinfo_query(vpsinfo) {
-    try {
-        for (const { ip } of vpsinfo) {
-            const apiUrl = `https://ip.eooce.com/${ip}`;
-            try {
-                const ipResponse = await fetch(apiUrl);
-                if (ipResponse.ok) {
-                    const { country_code, city, asn } = await ipResponse.json();
-                    return { ip, country_code, city, asn };  // 返回 IP 信息
-                } else {
-                    console.error(`IP查询失败: ${ip}`);
-                }
-            } catch (error) {
-                console.error(`请求IP信息失败: ${ip}`, error);
+    const results = [];
+    for (const { ip } of vpsinfo) {
+        const apiUrl = `https://ip.eooce.com/${ip}`;
+        try {
+            const ipResponse = await fetch(apiUrl);
+            if (ipResponse.ok) {
+                const { country_code, city, asn } = await ipResponse.json();
+                results.push({ ip, country_code, city, asn });
+            } else {
+                console.error(`IP查询失败: ${ip}`);
             }
+        } catch (error) {
+            console.error(`请求IP信息失败: ${ip}`, error);
         }
-    } catch (error) {
-        console.error('请求 VPSINFO 数据失败:', error);
     }
-    return null; // 如果没有成功获取信息，返回 null
+    return results;  // 返回包含所有 VPS IP 信息的数组
 }
 
 export default {
     async fetch(request, env) {
-      sitename = env.SITENAME || sitename;
-      vpsinfo = env.VPSINFO || vpsinfo;
-      tgid = env.TGID || tgid;
-      tgtoken = env.TGTOKEN || tgtoken;
-      days = parseInt(env.DAYS || days, 10);
-      
-      // 读取变量VPSINFO中的VPS数据，格式为json
-      if (!vpsinfo) {
-        return new Response("VPSINFO 环境变量未设置", { status: 500 });
-      }
-  
-      try {
-        const response = await fetch(vpsinfo);
-        if (!response.ok) {
-          throw new Error('网络响应失败');
+        sitename = env.SITENAME || sitename;
+        vpsinfo = env.VPSINFO || vpsinfo;
+        tgid = env.TGID || tgid;
+        tgtoken = env.TGTOKEN || tgtoken;
+        days = Number(env.DAYS) || 10;
+        
+        if (!vpsinfo) {
+            return new Response("VPSINFO 环境变量未设置", { status: 500 });
         }
-        const data = await response.json();
-        if (!Array.isArray(data)) {
-          throw new Error('JSON 数据格式不正确');
-        }
-        vpsinfo = data;
 
-        const ipdata = await ipinfo_query(vpsinfo); // 传递 vpsinfo 数据
-            if (ipdata) {
-                const { ip, country_code, city, asn } = ipdata;
+        try {
+            const response = await fetch(vpsinfo);
+            if (!response.ok) {
+                throw new Error('网络响应失败');
             }
+            const data = await response.json();
+            if (!Array.isArray(data)) {
+                throw new Error('JSON 数据格式不正确');
+            }
+            vpsinfo = data;  // 将从URL获取到的VPS数据赋值给vpsinfo
+            const ipdata = await ipinfo_query(vpsinfo);  // 获取所有 IP 信息
 
-        // 检查即将到期的VPS并发送 Telegram 消息
-        for (const info of vpsinfo) {
-          const endday = new Date(info.endday);
-          const today = new Date();
-          const daysRemaining = Math.ceil((endday - today) / (1000 * 60 * 60 * 24));
-  
-          if (daysRemaining > 0 && daysRemaining <= days) {
-            const message = `[VPS] ${ipdata.country_code} | ${ipdata.city} 将在 ${daysRemaining} 天后到期。IP：${ipdata.ip}，到期日期：${info.endday}`;
+            // 合并 vpsinfo 和 ipinfo
+            const vpsdata = vpsinfo.map(vps => {
+                const ipinfo = ipdata.find(data => data.ip === vps.ip);  // 查找匹配的 IP 信息
+                if (ipinfo) {
+                    return { ...vps, ...ipinfo };
+                }
+                return vps;  // 如果没有找到 IP 信息，返回原始数据
+            });
+
+            // 处理合并后的数据
+            vpsdata.forEach(vps => {
+                const { ip, country_code, city, asn, startday, endday, store, storeURL } = vps;
+                console.log(`IP: ${ip}, 国家: ${country_code}, 城市: ${city}, ASN: ${asn}, 开始日期: ${startday}, 到期日期: ${endday}`);
+            });
+        } catch (error) {
+            console.error("Fetch error:", error);
+            return new Response("无法获取或解析VPS的json文件", { status: 500 });
+        }
+
+    // 检查即将到期的VPS并发送 Telegram 消息
+    for (const info of vpsdata) {
+        const endday = new Date(info.endday);
+        const today = new Date();
+        const daysRemaining = Math.ceil((endday - today) / (1000 * 60 * 60 * 24));
+    
+        if (daysRemaining > 0 && daysRemaining <= days) {
+            const message = `[VPS] ${country_code} | ${city} 将在 ${daysRemaining} 天后到期。IP：${ip}，到期日期：${info.endday}`;
             
             // 在发送通知之前检查是否已经发送过通知
-            const lastSent = await env.VPS_TG_KV.get(ipdata.ip); // 使用KV存储检查上次发送的状态
+            const lastSent = await env.VPS_TG_KV.get(ip);  // 检查是否已发送过通知
             
             if (!lastSent || (new Date(lastSent).toISOString().split('T')[0] !== today.toISOString().split('T')[0])) {
-              // 如果没有记录，或者记录的时间不是今天，则发送通知并更新 KV
-              await sendtgMessage(message, tgid, tgtoken);
-              await env.VPS_TG_KV.put(ipdata.ip, new Date().toISOString()); // 更新 KV 存储的发送时间
+                await sendtgMessage(message, tgid, tgtoken);
+                await env.VPS_TG_KV.put(ip, new Date().toISOString());  // 更新 KV 存储的发送时间
             }
-          }
         }
-  
-        // 处理 generateHTML 的返回值
-        const htmlContent = await generateHTML(vpsinfo, sitename);
-        return new Response(htmlContent, {
-          headers: { 'Content-Type': 'text/html' },
-        });
-      } catch (error) {
-        console.error("Fetch error:", error);
-        return new Response("无法获取或解析VPS的 json 文件", { status: 500 });
-      }
     }
+    
+    // 处理 generateHTML 的返回值
+    const htmlContent = await generateHTML(vpsinfo, sitename);
+    return new Response(htmlContent, {
+        headers: { 'Content-Type': 'text/html' },
+    });
 };
 
-async function generateHTML(vpsinfo, SITENAME) {
-    const rows = await Promise.all(vpsinfo.map(async info => {
-      const startday = new Date(info.startday);
-      const endday = new Date(info.endday);
-      const today = new Date();
-      const totalDays = (endday - startday) / (1000 * 60 * 60 * 24);
-      const daysElapsed = (today - startday) / (1000 * 60 * 60 * 24);
-      const progressPercentage = Math.min(100, Math.max(0, (daysElapsed / totalDays) * 100));
-      const daysRemaining = Math.ceil((endday - today) / (1000 * 60 * 60 * 24));
-      const isExpired = today > endday;
-      const statusColor = isExpired ? '#e74c3c' : '#2ecc71';
-      const statusText = isExpired ? '已过期' : '正常';
+async function generateHTML(vpsdata, SITENAME) {
+    const rows = await Promise.all(vpsdata.map(async info => {
+        const ip = info.ip
+        const country_code = info.country_code
+        const asn = info.asn
+        const startday = new Date(info.startday);
+        const endday = new Date(info.endday);
+        const today = new Date();
+        const totalDays = (endday - startday) / (1000 * 60 * 60 * 24);
+        const daysElapsed = (today - startday) / (1000 * 60 * 60 * 24);
+        const progressPercentage = Math.min(100, Math.max(0, (daysElapsed / totalDays) * 100));
+        const daysRemaining = Math.ceil((endday - today) / (1000 * 60 * 60 * 24));
+        const isExpired = today > endday;
+        const statusColor = isExpired ? '#e74c3c' : '#2ecc71';
+        const statusText = isExpired ? '已过期' : '正常';
 
       return `
         <tr>
@@ -133,8 +141,8 @@ async function generateHTML(vpsinfo, SITENAME) {
           <td>${info.country_code}</td>
           <td>${info.city}</td>
           <td><a href="${info.store}" target="_blank">${info.store}</a></td>
-          <td>${info.registrationDate}</td>
-          <td>${info.expirationDate}</td>
+          <td>${info.startday}</td>
+          <td>${info.endday}</td>
           <td>${isExpired ? '已过期' : daysRemaining + ' 天'}</td>
           <td>
             <div class="progress-bar">
