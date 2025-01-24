@@ -151,107 +151,128 @@ async function generateHTML(vpsdata, sitename) {
     }));
 
     return `
-        <!DOCTYPE html>
-        <html lang="zh-CN">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>${sitename}</title>
-            <link rel="icon" href="https://raw.githubusercontent.com/yutian81/yutian81.github.io/master/assets/images/vpsinfo.png" type="image/png">
-            <style>
-                body {
-                    font-family: Arial, sans-serif;
-                    line-height: 1.6;
-                    margin: 0;
-                    padding: 0;
-                    background-color: #f4f4f4;
-                    color: #333;
-                    display: flex;
-                    flex-direction: column;
-                    min-height: 100vh;
-                }
-                .container {
-                    flex: 1;
-                    width: 95%;
-                    max-width: 1200px;
-                    margin: 20px auto;
-                    background-color: #fff;
-                    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-                    border-radius: 5px;
-                    overflow: hidden;
-                }
-                h1 {
-                    background-color: #3498db;
-                    color: #fff;
-                    padding: 20px;
-                    margin: 0;
-                }
-                .table-container {
-                    width: 100%;
-                    overflow-x: auto;
-                }
-                table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    white-space: nowrap;
-                    table-layout: auto; /* 自动列宽 */
-                }
-                th, td {
-                    padding: 12px;
-                    text-align: left;
-                    border-bottom: 1px solid #ddd;
-                    white-space: nowrap; /* 避免内容自动换行 */
-                }
-                th {
-                    background-color: #f2f2f2;
-                    font-weight: bold;
-                }
-                .status-dot {
-                    display: inline-block;
-                    width: 10px;
-                    height: 10px;
-                    border-radius: 50%;
-                    background-color: #2ecc71;
-                }
-                .progress-bar {
-                    width: 100%;
-                    min-width: 100px;
-                    background-color: #e0e0e0;
-                    border-radius: 4px;
-                    overflow: hidden;
-                }
-                .progress {
-                    height: 20px;
-                    background-color: #3498db;
-                }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <h1>${sitename}</h1>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>状态</th>
-                                <th>IP</th>
-                                <th>ASN</th>
-                                <th>国家</th>
-                                <th>城市</th>
-                                <th>商家</th>
-                                <th>注册日</th>
-                                <th>到期日</th>
-                                <th>剩余天数</th>
-                                <th>使用进度</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${rows.join('')}
-                        </tbody>
-                    </table>
-                </div>
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${sitename}</title>
+        <link rel="icon" href="https://raw.githubusercontent.com/yutian81/yutian81.github.io/master/assets/images/vpsinfo.png" type="image/png">
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                line-height: 1.6;
+                margin: 0;
+                padding: 0;
+                background-color: #f4f4f4;
+                color: #333;
+                display: flex;
+                flex-direction: column;
+                min-height: 100vh;
+            }
+            .container {
+                flex: 1;
+                width: 95%;
+                max-width: 1400px; /* 主容器宽度加宽 */
+                margin: 20px auto;
+                background-color: #fff;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                border-radius: 5px;
+                overflow: hidden;
+            }
+            h1 {
+                background-color: #3498db;
+                color: #fff;
+                padding: 20px;
+                margin: 0;
+                font-size: 1.8rem; /* 增大标题文字 */
+            }
+            .table-container {
+                width: 100%;
+                overflow-x: auto;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                white-space: nowrap;
+                table-layout: auto;
+            }
+            th, td {
+                padding: 12px;
+                text-align: left;
+                border-bottom: 1px solid #ddd;
+                white-space: nowrap;
+            }
+            th {
+                background-color: #f2f2f2;
+                font-weight: bold;
+            }
+            .status-dot {
+                display: inline-block;
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                background-color: #2ecc71;
+            }
+            .progress-bar {
+                width: 100%;
+                min-width: 100px;
+                background-color: #e0e0e0;
+                border-radius: 4px;
+                overflow: hidden;
+            }
+            .progress {
+                height: 20px;
+                background-color: #3498db;
+            }
+            footer {
+                background-color: #3498db;
+                color: white;
+                padding: 5px 0;
+                text-align: center;
+                font-size: 0.9rem;
+                margin-top: 15px;
+            }
+            footer a {
+                color: white;
+                text-decoration: none;
+                margin-left: 10px;
+                font-weight: bold;
+            }
+            footer a:hover {
+                text-decoration: underline;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>${sitename}</h1>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>状态</th>
+                            <th>IP</th>
+                            <th>ASN</th>
+                            <th>国家</th>
+                            <th>城市</th>
+                            <th>商家</th>
+                            <th>注册日</th>
+                            <th>到期日</th>
+                            <th>剩余天数</th>
+                            <th>使用进度</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rows.join('')}
+                    </tbody>
+                </table>
             </div>
-        </body>
-        </html>
+        </div>
+        <footer>
+            <p>Copyright © 2025 yutian81 | <a href="https://github.com/yutian81/vps-check" target="_blank">GitHub Repository</a> | <a href="https://blog.811520.xyz/" target="_blank">yutian81 Blog</a></p>
+        </footer>
+    </body>
+    </html>
     `;
 }
