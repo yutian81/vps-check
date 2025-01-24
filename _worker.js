@@ -29,8 +29,8 @@ async function sendtgMessage(message, tgid, tgtoken) {
 }
 
 // 获取IP的国家、城市、ASN信息
-async function ipinfo_query(vpsdata) {
-    const results = await Promise.all(vpsdata.map(async ({ ip }) => {
+async function ipinfo_query(vpsinfo) {
+    const results = await Promise.all(vpsinfo.map(async ({ ip }) => {
         const apiUrl = `https://ip.eooce.com/${ip}`;
         try {
             const ipResponse = await fetch(apiUrl);
@@ -70,9 +70,9 @@ export default {
             if (!Array.isArray(data)) {
                 throw new Error('JSON 数据格式不正确');
             }
+            
             vpsinfo = data;  // 将从URL获取到的VPS数据赋值给vpsinfo
             const ipdata = await ipinfo_query(vpsinfo);  // 获取所有 IP 信息
-
             // 合并 vpsinfo 和 ipinfo
             const vpsdata = vpsinfo.map(vps => {
                 const ipinfo = ipdata.find(data => data.ip === vps.ip);  // 查找匹配的 IP 信息
@@ -99,7 +99,7 @@ export default {
         const daysRemaining = Math.ceil((endday - today) / (1000 * 60 * 60 * 24));
     
         if (daysRemaining > 0 && daysRemaining <= days) {
-            const message = `[VPS] ${country_code} | ${city} 将在 ${daysRemaining} 天后到期。IP：${ip}，到期日期：${info.endday}`;
+            const message = `[VPS] ${country_code} | ${city} 将在 ${daysRemaining} 天后到期。IP：${ip}，到期日期：${endday}`;
             
             // 在发送通知之前检查是否已经发送过通知
             const lastSent = await env.VPS_TG_KV.get(ip);  // 检查是否已发送过通知
@@ -112,20 +112,22 @@ export default {
     }
     
     // 处理 generateHTML 的返回值
-    const htmlContent = await generateHTML(vpsinfo, sitename);
+    const htmlContent = await generateHTML(vpsdata, sitename);
     return new Response(htmlContent, {
         headers: { 'Content-Type': 'text/html' },
     });
 };
 
-async function generateHTML(vpsdata, SITENAME) {
+async function generateHTML(vpsdata, sitename) {
     const rows = await Promise.all(vpsdata.map(async info => {
+        const startday = new Date(info.startday);
+        const endday = new Date(info.endday);
         const today = new Date();
-        const totalDays = (info.endday - info.startday) / (1000 * 60 * 60 * 24);
-        const daysElapsed = (today - info.startday) / (1000 * 60 * 60 * 24);
+        const totalDays = (endday - startday) / (1000 * 60 * 60 * 24);
+        const daysElapsed = (today - startday) / (1000 * 60 * 60 * 24);
         const progressPercentage = Math.min(100, Math.max(0, (daysElapsed / totalDays) * 100));
-        const daysRemaining = Math.ceil((info.endday - today) / (1000 * 60 * 60 * 24));
-        const isExpired = today > info.endday;
+        const daysRemaining = Math.ceil((endday - today) / (1000 * 60 * 60 * 24));
+        const isExpired = today > endday;
         const statusColor = isExpired ? '#e74c3c' : '#2ecc71';
         const statusText = isExpired ? '已过期' : '正常';
 
@@ -227,7 +229,7 @@ async function generateHTML(vpsdata, SITENAME) {
       </head>
       <body>
         <div class="container">
-          <h1>${SITENAME}</h1>
+          <h1>${sitename}</h1>
           <div class="table-container">
             <table>
               <thead>
