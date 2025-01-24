@@ -1,6 +1,6 @@
 // 定义外部变量
 let sitename = "VPS到期监控"; // 变量名SITENAME，自定义站点名称，默认为“域名监控”
-let vpsinfo = ""; // 变量名VPSINFO，填入域名信息json文件直链，必须设置的变量
+let vpsurl = ""; // 变量名VPSINFO，填入域名信息json文件直链，必须设置的变量
 let tgid = ""; // 变量名TGID，填入TG机器人ID，不需要提醒则不填
 let tgtoken = ""; // 变量名TGTOKEN，填入TG的TOKEN，不需要提醒则不填
 let days = "5"; // 变量名DAYS，提前几天发送TG提醒，默认为5天，必须为大于0的整数
@@ -29,8 +29,8 @@ async function sendtgMessage(message, tgid, tgtoken) {
 }
 
 // 获取IP的国家、城市、ASN信息
-async function ipinfo_query(vpsinfo) {
-    const results = await Promise.all(vpsinfo.map(async ({ ip }) => {
+async function ipinfo_query(vpsjson) {
+    const results = await Promise.all(vpsjson.map(async ({ ip }) => {
         const apiUrl = `https://ip.eooce.com/${ip}`;
         try {
             const ipResponse = await fetch(apiUrl);
@@ -52,32 +52,31 @@ async function ipinfo_query(vpsinfo) {
 export default {
     async fetch(request, env) {
         sitename = env.SITENAME || sitename;
-        vpsinfo = env.VPSINFO || vpsinfo;
+        vpsurl = env.VPSINFO || vpsurl;
         tgid = env.TGID || tgid;
         tgtoken = env.TGTOKEN || tgtoken;
         days = Number(env.DAYS) || 10;
         
-        if (!vpsinfo) {
+        if (!vpsurl) {
             return new Response("VPSINFO 环境变量未设置", { status: 500 });
         }
 
         try {
-            const response = await fetch(vpsinfo);
+            const response = await fetch(vpsurl);
             if (!response.ok) {
                 throw new Error('网络响应失败');
             }
-            const data = await response.json();
+            const vpsjson = await response.json();
             if (!Array.isArray(data)) {
                 throw new Error('JSON 数据格式不正确');
             }
             
-            vpsinfo = data;  // 将从URL获取到的VPS数据赋值给vpsinfo
-            const ipdata = await ipinfo_query(vpsinfo);  // 获取所有 IP 信息
-            // 合并 vpsinfo 和 ipinfo
-            const vpsdata = vpsinfo.map(vps => {
-                const ipinfo = ipdata.find(data => data.ip === vps.ip);  // 查找匹配的 IP 信息
-                if (ipinfo) {
-                    return { ...vps, ...ipinfo };
+            const ipdata = await ipinfo_query(vpsjson);
+            // 合并 vpsjson 和 ipjson
+            const vpsdata = vpsjson.map(vps => {
+                const ipjson = ipdata.find(vpsjson => vpsjson.ip === vps.ip);  // 查找匹配的 IP 信息
+                if (ipjson) {
+                    return { ...vps, ...ipjson };
                 }
                 return vps;  // 如果没有找到 IP 信息，返回原始数据
             });
