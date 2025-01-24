@@ -95,7 +95,7 @@ export default {
           const daysRemaining = Math.ceil((endday - today) / (1000 * 60 * 60 * 24));
   
           if (daysRemaining > 0 && daysRemaining <= days) {
-            const message = `[VPS] ${info.country} ${info.city} 将在 ${daysRemaining} 天后到期。IP：${info.ip}，到期日期：${info.endday}`;
+            const message = `[VPS] ${info.country_code} ${info.city} 将在 ${daysRemaining} 天后到期。IP：${info.ip}，到期日期：${info.endday}`;
             
             // 在发送通知之前检查是否已经发送过通知
             const lastSent = await env.VPS_TG_KV.get(info.ip); // 使用KV存储检查上次发送的状态
@@ -138,7 +138,7 @@ async function generateHTML(vpsinfo, SITENAME) {
           <td><span class="status-dot" style="background-color: ${statusColor};" title="${statusText}"></span></td>
           <td>${info.ip}</td>
           <td>${info.asn}</td>
-          <td>${info.country}</td>
+          <td>${info.country_code}</td>
           <td>${info.city}</td>
           <td><a href="${info.store}" target="_blank">${info.store}</a></td>
           <td>${info.registrationDate}</td>
