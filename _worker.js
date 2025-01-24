@@ -30,7 +30,7 @@ async function sendtgMessage(message, tgid, tgtoken) {
 
 // 获取IP的国家、城市、ASN信息
 async function ipinfo_query(vpsinfo) {
-    const results = await Promise.all(vpsinfo.map(async ({ ip }) => {
+    const results = await Promise.all(vpsdata.map(async ({ ip }) => {
         const apiUrl = `https://ip.eooce.com/${ip}`;
         try {
             const ipResponse = await fetch(apiUrl);
@@ -121,7 +121,7 @@ export default {
 async function generateHTML(vpsdata, SITENAME) {
     const rows = await Promise.all(vpsdata.map(async info => {
         const today = new Date();
-        const totalDays = (info.endday - startDate) / (1000 * 60 * 60 * 24);
+        const totalDays = (info.endday - info.startday) / (1000 * 60 * 60 * 24);
         const daysElapsed = (today - info.startday) / (1000 * 60 * 60 * 24);
         const progressPercentage = Math.min(100, Math.max(0, (daysElapsed / totalDays) * 100));
         const daysRemaining = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
