@@ -30,22 +30,23 @@ async function sendtgMessage(message, tgid, tgtoken) {
 
 // 获取IP的国家、城市、ASN信息
 async function ipinfo_query(vpsinfo) {
-    const results = [];
-    for (const { ip } of vpsinfo) {
+    const results = await Promise.all(vpsinfo.map(async ({ ip }) => {
         const apiUrl = `https://ip.eooce.com/${ip}`;
         try {
             const ipResponse = await fetch(apiUrl);
             if (ipResponse.ok) {
                 const { country_code, city, asn } = await ipResponse.json();
-                results.push({ ip, country_code, city, asn });
+                return { ip, country_code, city, asn };
             } else {
                 console.error(`IP查询失败: ${ip}`);
+                return null;
             }
         } catch (error) {
             console.error(`请求IP信息失败: ${ip}`, error);
+            return null;
         }
-    }
-    return results;  // 返回包含所有 VPS IP 信息的数组
+    }));
+    return results.filter(info => info !== null);  // 过滤掉请求失败的IP信息
 }
 
 export default {
@@ -119,17 +120,12 @@ export default {
 
 async function generateHTML(vpsdata, SITENAME) {
     const rows = await Promise.all(vpsdata.map(async info => {
-        const ip = info.ip
-        const country_code = info.country_code
-        const asn = info.asn
-        const startday = new Date(info.startday);
-        const endday = new Date(info.endday);
         const today = new Date();
-        const totalDays = (endday - startday) / (1000 * 60 * 60 * 24);
-        const daysElapsed = (today - startday) / (1000 * 60 * 60 * 24);
+        const totalDays = (info.endday - startDate) / (1000 * 60 * 60 * 24);
+        const daysElapsed = (today - info.startday) / (1000 * 60 * 60 * 24);
         const progressPercentage = Math.min(100, Math.max(0, (daysElapsed / totalDays) * 100));
-        const daysRemaining = Math.ceil((endday - today) / (1000 * 60 * 60 * 24));
-        const isExpired = today > endday;
+        const daysRemaining = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
+        const isExpired = today > info.endday;
         const statusColor = isExpired ? '#e74c3c' : '#2ecc71';
         const statusText = isExpired ? '已过期' : '正常';
 
@@ -140,7 +136,7 @@ async function generateHTML(vpsdata, SITENAME) {
           <td>${info.asn}</td>
           <td>${info.country_code}</td>
           <td>${info.city}</td>
-          <td><a href="${info.store}" target="_blank">${info.store}</a></td>
+          <td><a href="${info.storeURL}" target="_blank">${info.store}</a></td>
           <td>${info.startday}</td>
           <td>${info.endday}</td>
           <td>${isExpired ? '已过期' : daysRemaining + ' 天'}</td>
