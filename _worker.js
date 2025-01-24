@@ -28,62 +28,40 @@ async function sendtgMessage(message, tgid, tgtoken) {
     }
 }
 
-// 通过API查询IP信息
-async function getIpInfo(ip) {
-    const apiUrl = `https://ip.eooce.com/${ip}`;
-    try {
-        const ipResponse = await fetch(apiUrl);
-        if (ipResponse.ok) {
-            return await ipResponse.json();
-        } else {
-            console.error(`IP查询失败: ${ip}`);
-        }
-    } catch (error) {
-        console.error(`请求IP信息失败: ${ip}`, error);
-    }
-    return null;
-}
-
 // 获取IP的国家、城市、ASN信息
-async function ipinfo(country_code, city, asn) {
-    const vpsinfo = env.VPSINFO;
+async function ipinfo() {
+    vpsinfo = env.VPSINFO || vpsinfo;
     if (!vpsinfo) {
         return new Response("VPSINFO 环境变量未设置", { status: 500 });
     }
 
     try {
-        // 获取 VPSINFO 数据
         const response = await fetch(vpsinfo);
         if (!response.ok) {
             console.error('获取 VPSINFO 数据失败');
             return null;
-        }
-        
+        }        
         const vpsInfoJson = await response.json(); // 解析 JSON 数据
         
         // 循环遍历每个 IP 地址，查询并获取相应的信息
-        for (const vps of vpsInfoJson) {
-            const ip = vps.ip;
-            
-            // 调用 IP 信息 API 获取 IP 信息
-            const ipData = await getIpInfo(ip);
-            if (!ipData) {
-                console.error(`获取IP信息失败: ${ip}`);
-                continue; // 跳过当前 IP，继续处理下一个
-            }
-
-            // 提取相关信息
-            const { country_code: ipCountryCode, city: ipCity, asn: ipAsn } = ipData;
-
-            // 将获取到的值与传入的参数进行比较并返回
-            if (ipCountryCode === country_code && ipCity === city && ipAsn === asn) {
-                return { ip, country_code: ipCountryCode, city: ipCity, asn: ipAsn };
+        for (const { ip } of vpsInfoJson) {
+            const apiUrl = `https://ip.eooce.com/${ip}`;
+            try {
+                const ipResponse = await fetch(apiUrl);
+                if (ipResponse.ok) {
+                    const { country_code, city, asn } = await ipResponse.json();
+                    return { ip, country_code, city, asn };  // 返回 IP 信息
+                } else {
+                    console.error(`IP查询失败: ${ip}`);
+                }
+            } catch (error) {
+                console.error(`请求IP信息失败: ${ip}`, error);
             }
         }
     } catch (error) {
         console.error('请求 VPSINFO 数据失败:', error);
     }
-    return null;
+    return null; // 如果没有成功获取信息，返回 null
 }
 
 export default {
