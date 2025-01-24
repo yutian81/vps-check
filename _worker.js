@@ -5,12 +5,17 @@ let tgid = ""; // 变量名TGID，填入TG机器人ID，不需要提醒则不填
 let tgtoken = ""; // 变量名TGTOKEN，填入TG的TOKEN，不需要提醒则不填
 let days = "5"; // 变量名DAYS，提前几天发送TG提醒，默认为5天，必须为大于0的整数
 
+// tg消息发送函数
 async function sendtgMessage(message, tgid, tgtoken) {
-    if (!tgid || !tgtoken) return;    
+    if (!tgid || !tgtoken) {
+        console.log('缺少变量 TGID 或 TGTOKEN，跳过消息发送');
+        return;
+    }  
     const url = `https://api.telegram.org/bot${tgtoken}/sendMessage`;
     const params = {
       chat_id: tgid,
       text: message,
+      parse_mode: 'Markdown',
     };  
     try {
       await fetch(url, {
@@ -39,7 +44,7 @@ export default {
       try {
         const response = await fetch(vpsinfo);
         if (!response.ok) {
-          throw new Error('Network response was not ok');
+          throw new Error('网络响应失败');
         }
         const data = await response.json();
         if (!Array.isArray(data)) {
@@ -55,7 +60,15 @@ export default {
   
           if (daysRemaining > 0 && daysRemaining <= days) {
             const message = `[VPS] ${info.country} ${info.system} ${info.type} 将在 ${daysRemaining} 天后到期。到期日期：${info.expirationDate}`;
-            await sendtgMessage(message, tgid, tgtoken);
+            
+            // 在发送通知之前检查是否已经发送过通知
+            const lastSent = await env.VPS_TG_KV.get(info.system); // 使用KV存储检查上次发送的状态
+            
+            if (!lastSent || (new Date(lastSent).toISOString().split('T')[0] !== today.toISOString().split('T')[0])) {
+              // 如果没有记录，或者记录的时间不是今天，则发送通知并更新 KV
+              await sendtgMessage(message, tgid, tgtoken);
+              await env.VPS_TG_KV.put(info.system, new Date().toISOString()); // 更新 KV 存储的发送时间
+            }
           }
         }
   
@@ -177,13 +190,6 @@ async function generateHTML(vpsinfo, SITENAME) {
             height: 20px;
             background-color: #3498db;
           }
-          .footer {
-            text-align: center;
-            padding: 10px;
-            background-color: #3498db;
-            color: #fff;
-            margin-top: auto;
-          }
         </style>
       </head>
       <body>
@@ -194,12 +200,12 @@ async function generateHTML(vpsinfo, SITENAME) {
               <thead>
                 <tr>
                   <th>状态</th>
-                  <th>国家/地区</th>
-                  <th>注册商</th>
-                  <th>ASN号</th>
+                  <th>国家</th>
+                  <th>系统</th>
+                  <th>ASN</th>
                   <th>类型</th>
                   <th>注册时间</th>
-                  <th>续期时间</th>
+                  <th>到期时间</th>
                   <th>剩余天数</th>
                   <th>使用进度</th>
                 </tr>
@@ -210,10 +216,7 @@ async function generateHTML(vpsinfo, SITENAME) {
             </table>
           </div>
         </div>
-        <div class="footer">
-          Powered by yutian81 | <a href="https://github.com/yutian81/vps-check" style="color: inherit; text-decoration: none;">Fork from Github</a>
-        </div>
       </body>
       </html>
     `;
-}
+  }
