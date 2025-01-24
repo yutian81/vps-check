@@ -26,7 +26,65 @@ async function sendtgMessage(message, tgid, tgtoken) {
     } catch (error) {
       console.error('Telegram 消息推送失败:', error);
     }
-}  
+}
+
+// 通过API查询IP信息
+async function getIpInfo(ip) {
+    const apiUrl = `https://ip.eooce.com/${ip}`;
+    try {
+        const ipResponse = await fetch(apiUrl);
+        if (ipResponse.ok) {
+            return await ipResponse.json();
+        } else {
+            console.error(`IP查询失败: ${ip}`);
+        }
+    } catch (error) {
+        console.error(`请求IP信息失败: ${ip}`, error);
+    }
+    return null;
+}
+
+// 获取IP的国家、城市、ASN信息
+async function ipinfo(country_code, city, asn) {
+    const vpsinfo = env.VPSINFO;
+    if (!vpsinfo) {
+        return new Response("VPSINFO 环境变量未设置", { status: 500 });
+    }
+
+    try {
+        // 获取 VPSINFO 数据
+        const response = await fetch(vpsinfo);
+        if (!response.ok) {
+            console.error('获取 VPSINFO 数据失败');
+            return null;
+        }
+        
+        const vpsInfoJson = await response.json(); // 解析 JSON 数据
+        
+        // 循环遍历每个 IP 地址，查询并获取相应的信息
+        for (const vps of vpsInfoJson) {
+            const ip = vps.ip;
+            
+            // 调用 IP 信息 API 获取 IP 信息
+            const ipData = await getIpInfo(ip);
+            if (!ipData) {
+                console.error(`获取IP信息失败: ${ip}`);
+                continue; // 跳过当前 IP，继续处理下一个
+            }
+
+            // 提取相关信息
+            const { country_code: ipCountryCode, city: ipCity, asn: ipAsn } = ipData;
+
+            // 将获取到的值与传入的参数进行比较并返回
+            if (ipCountryCode === country_code && ipCity === city && ipAsn === asn) {
+                return { ip, country_code: ipCountryCode, city: ipCity, asn: ipAsn };
+            }
+        }
+    } catch (error) {
+        console.error('请求 VPSINFO 数据失败:', error);
+    }
+    return null;
+}
 
 export default {
     async fetch(request, env) {
@@ -54,20 +112,20 @@ export default {
 
         // 检查即将到期的VPS并发送 Telegram 消息
         for (const info of vpsinfo) {
-          const expirationDate = new Date(info.expirationDate);
+          const endday = new Date(info.endday);
           const today = new Date();
-          const daysRemaining = Math.ceil((expirationDate - today) / (1000 * 60 * 60 * 24));
+          const daysRemaining = Math.ceil((endday - today) / (1000 * 60 * 60 * 24));
   
           if (daysRemaining > 0 && daysRemaining <= days) {
-            const message = `[VPS] ${info.country} ${info.system} ${info.type} 将在 ${daysRemaining} 天后到期。到期日期：${info.expirationDate}`;
+            const message = `[VPS] ${info.country} ${info.city} 将在 ${daysRemaining} 天后到期。IP：${info.ip}，到期日期：${info.endday}`;
             
             // 在发送通知之前检查是否已经发送过通知
-            const lastSent = await env.VPS_TG_KV.get(info.system); // 使用KV存储检查上次发送的状态
+            const lastSent = await env.VPS_TG_KV.get(info.ip); // 使用KV存储检查上次发送的状态
             
             if (!lastSent || (new Date(lastSent).toISOString().split('T')[0] !== today.toISOString().split('T')[0])) {
               // 如果没有记录，或者记录的时间不是今天，则发送通知并更新 KV
               await sendtgMessage(message, tgid, tgtoken);
-              await env.VPS_TG_KV.put(info.system, new Date().toISOString()); // 更新 KV 存储的发送时间
+              await env.VPS_TG_KV.put(info.ip, new Date().toISOString()); // 更新 KV 存储的发送时间
             }
           }
         }
@@ -86,24 +144,25 @@ export default {
 
 async function generateHTML(vpsinfo, SITENAME) {
     const rows = await Promise.all(vpsinfo.map(async info => {
-      const registrationDate = new Date(info.registrationDate);
-      const expirationDate = new Date(info.expirationDate);
+      const startday = new Date(info.startday);
+      const endday = new Date(info.endday);
       const today = new Date();
-      const totalDays = (expirationDate - registrationDate) / (1000 * 60 * 60 * 24);
-      const daysElapsed = (today - registrationDate) / (1000 * 60 * 60 * 24);
+      const totalDays = (endday - startday) / (1000 * 60 * 60 * 24);
+      const daysElapsed = (today - startday) / (1000 * 60 * 60 * 24);
       const progressPercentage = Math.min(100, Math.max(0, (daysElapsed / totalDays) * 100));
-      const daysRemaining = Math.ceil((expirationDate - today) / (1000 * 60 * 60 * 24));
-      const isExpired = today > expirationDate;
+      const daysRemaining = Math.ceil((endday - today) / (1000 * 60 * 60 * 24));
+      const isExpired = today > endday;
       const statusColor = isExpired ? '#e74c3c' : '#2ecc71';
       const statusText = isExpired ? '已过期' : '正常';
 
       return `
         <tr>
           <td><span class="status-dot" style="background-color: ${statusColor};" title="${statusText}"></span></td>
-          <td>${info.country}</td>
-          <td><a href="${info.systemURL}" target="_blank">${info.system}</a></td>
+          <td>${info.ip}</td>
           <td>${info.asn}</td>
-          <td>${info.type}</td>
+          <td>${info.country}</td>
+          <td>${info.city}</td>
+          <td><a href="${info.store}" target="_blank">${info.store}</a></td>
           <td>${info.registrationDate}</td>
           <td>${info.expirationDate}</td>
           <td>${isExpired ? '已过期' : daysRemaining + ' 天'}</td>
@@ -200,12 +259,13 @@ async function generateHTML(vpsinfo, SITENAME) {
               <thead>
                 <tr>
                   <th>状态</th>
-                  <th>国家</th>
-                  <th>系统</th>
+                  <th>IP</th>
                   <th>ASN</th>
-                  <th>类型</th>
-                  <th>注册时间</th>
-                  <th>到期时间</th>
+                  <th>国家</th>
+                  <th>城市</th>
+                  <th>商家</th>
+                  <th>注册日</th>
+                  <th>到期日</th>
                   <th>剩余天数</th>
                   <th>使用进度</th>
                 </tr>
