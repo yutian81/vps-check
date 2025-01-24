@@ -124,7 +124,7 @@ async function generateHTML(vpsdata, SITENAME) {
         const totalDays = (info.endday - info.startday) / (1000 * 60 * 60 * 24);
         const daysElapsed = (today - info.startday) / (1000 * 60 * 60 * 24);
         const progressPercentage = Math.min(100, Math.max(0, (daysElapsed / totalDays) * 100));
-        const daysRemaining = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
+        const daysRemaining = Math.ceil((info.endday - today) / (1000 * 60 * 60 * 24));
         const isExpired = today > info.endday;
         const statusColor = isExpired ? '#e74c3c' : '#2ecc71';
         const statusText = isExpired ? '已过期' : '正常';
