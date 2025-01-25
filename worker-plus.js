@@ -85,9 +85,13 @@ export default {
                 const password = formData.get('password');
                 
                 if (verifyPassword(password, env)) {
-                    const response = Response.redirect(url.origin, 302);
-                    response.headers.set('Set-Cookie', `password=${password}; path=/; HttpOnly`);
-                    return response;
+                    return new Response(null, {
+                        status: 302,
+                        headers: {
+                            'Location': '/',
+                            'Set-Cookie': `password=${password}; path=/; HttpOnly`
+                        }
+                    });
                 } else {
                     return new Response(generateLoginHTML(true), {
                         headers: { 'Content-Type': 'text/html' }
@@ -224,7 +228,7 @@ function generateLoginHTML(isError = false) {
             }
             h1 {
                 text-align: center;
-                color: #3498db;
+                color: #2573b3;
                 margin-bottom: 2rem;
             }
             .form-group {
@@ -245,7 +249,7 @@ function generateLoginHTML(isError = false) {
             button {
                 width: 100%;
                 padding: 0.8rem;
-                background-color: #3498db;
+                background-color: #2573b3;
                 color: white;
                 border: none;
                 border-radius: 4px;
@@ -254,7 +258,7 @@ function generateLoginHTML(isError = false) {
                 transition: background-color 0.3s ease;
             }
             button:hover {
-                background-color: #2980b9;
+                background-color: #1e5c8f;
             }
             .error-message {
                 color: #e74c3c;
@@ -307,7 +311,7 @@ function generateSettingsHTML(config, showError = false) {
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             }
             h1 {
-                color: #3498db;
+                color: #2573b3;
                 margin-bottom: 2rem;
                 text-align: center;
             }
@@ -328,7 +332,7 @@ function generateSettingsHTML(config, showError = false) {
                 transition: border-color 0.3s ease;
             }
             input[type="text"]:focus, input[type="number"]:focus {
-                border-color: #3498db;
+                border-color: #2573b3;
                 outline: none;
             }
             .buttons {
@@ -346,18 +350,33 @@ function generateSettingsHTML(config, showError = false) {
                 transition: background-color 0.3s ease;
             }
             .save-btn {
-                background-color: #3498db;
+                background-color: #2573b3;
                 color: white;
+                padding: 0.8rem 2rem;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 1rem;
+                text-decoration: none;
+                display: inline-block;
+                text-align: center;
+            }
+            .back-btn {
+                background-color: #7f8c8d;
+                color: white;
+                text-decoration: none;
+                padding: 0.8rem 2rem;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 1rem;
+                transition: background-color 0.3s ease;
             }
             .save-btn:hover {
-                background-color: #2980b9;
+                background-color: #1e5c8f;
             }
-            .cancel-btn {
-                background-color: #95a5a6;
-                color: white;
-            }
-            .cancel-btn:hover {
-                background-color: #7f8c8d;
+            .back-btn:hover {
+                background-color: #666666;
             }
             .error-message {
                 color: #e74c3c;
@@ -373,14 +392,14 @@ function generateSettingsHTML(config, showError = false) {
     <body>
         <div class="settings-container">
             <h1>系统设置</h1>
-            <div class="error-message">VPS信息URL为必填项</div>
+            <div class="error-message">存储VPS信息的URL直链为必填项</div>
             <form method="POST" action="/settings">
                 <div class="form-group">
                     <label for="sitename">站点名称</label>
                     <input type="text" id="sitename" name="sitename" value="${config.sitename}">
                 </div>
                 <div class="form-group">
-                    <label for="vpsurl">VPS信息URL <span class="required">*</span></label>
+                    <label for="vpsurl">存储VPS信息的URL直链 <span class="required">*</span></label>
                     <input type="text" id="vpsurl" name="vpsurl" value="${config.vpsurl}" required>
                 </div>
                 <div class="form-group">
@@ -397,7 +416,7 @@ function generateSettingsHTML(config, showError = false) {
                 </div>
                 <div class="buttons">
                     <button type="submit" class="save-btn">保存</button>
-                    <a href="/"><button type="button" class="cancel-btn">取消</button></a>
+                    <a href="/" class="back-btn">返回</a>
                 </div>
             </form>
         </div>
@@ -423,7 +442,7 @@ async function generateHTML(vpsdata, sitename) {
         return `
             <tr>
                 <td><span class="status-dot" style="background-color: ${statusColor};" title="${statusText}"></span></td>
-                <td>${info.ip}</td>
+                <td><span class="copy-ip" style="cursor: pointer;" onclick="copyToClipboard('${info.ip}')" title="点击复制">${info.ip}</span></td>
                 <td>${info.asn}</td>
                 <td>${info.country_code}</td>
                 <td>${info.city}</td>
@@ -471,7 +490,7 @@ async function generateHTML(vpsdata, sitename) {
                 overflow: hidden;
             }
             h1 {
-                background-color: #3498db;
+                background-color: #2573b3;
                 color: #fff;
                 padding: 20px;
                 margin: 0;
@@ -513,11 +532,11 @@ async function generateHTML(vpsdata, sitename) {
             }
             .progress {
                 height: 20px;
-                background-color: #3498db;
+                background-color: #2573b3;
                 transition: width 0.3s ease;
             }
             footer {
-                background-color: #3498db;
+                background-color: #2573b3;
                 color: white;
                 padding: 5px 0;
                 text-align: center;
@@ -535,7 +554,7 @@ async function generateHTML(vpsdata, sitename) {
                 color: #f1c40f;
             }
             .store-link {
-                color: #3498db;
+                color: #2573b3;
                 text-decoration: none;
                 transition: color 0.3s ease;
             }
@@ -553,13 +572,26 @@ async function generateHTML(vpsdata, sitename) {
             }
             .settings-link:hover {
                 background-color: white;
-                color: #3498db;
+                color: #2573b3;
+            }
+            .copy-ip:hover {
+                color: #2573b3;
+                text-decoration: underline;
             }
         </style>
+        <script>
+            function copyToClipboard(text) {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('IP已复制到剪贴板');
+                }).catch(err => {
+                    console.error('复制失败:', err);
+                });
+            }
+        </script>
     </head>
     <body>
         <div class="container">
-            <div style="display: flex; justify-content: space-between; align-items: center; background-color: #3498db; padding: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; background-color: #2573b3; padding: 20px;">
                 <h1 style="margin: 0;">${sitename}</h1>
                 <a href="/settings" class="settings-link">设置</a>
             </div>
