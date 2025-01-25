@@ -29,9 +29,9 @@
 **示例**，请修改其中信息为你自己的vps
 ```
 [
-  { "country": "香港", "system": "Akile", "asn": "AS61112 Akile", "type": "VPS", "registrationDate": "2024-04-12", "expirationDate": "2025-04-12", "systemURL": "https://akile.io" },
-  { "country": "巴西", "system": "DCI-FD5", "asn": "AS31898 Oracle", "type": "NAT", "registrationDate": "2024-08-19", "expirationDate": "2024-11-16", "systemURL": "https://dash.duckyci.com" },
-  { "country": "波兰", "system": "Serv00-S9", "asn": "AS57367 Atman", "type": "容器", "registrationDate": "2024-08-18", "expirationDate": "2034-08-20", "systemURL": "https://panel9.serv00.com" }
+  { "ip": "209.135.168.63", "startday": "2025-01-11", "endday": "2026-01-10", "store": "DartNode", "storeURL": "https://app.dartnode.com/" },
+  { "ip": "141.11.62.49", "startday": "2024-12-31", "endday": "2026-02-14", "store": "ChunkServe", "storeURL": "https://billing.chunkserve.com/" },
+  { "ip": "31.57.241.100", "startday": "2025-01-19", "endday": "2027-01-19", "store": "Dasabo", "storeURL": "https://my.dasabo.com/" }
 ]
 ```
 
