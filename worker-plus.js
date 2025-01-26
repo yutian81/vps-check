@@ -245,6 +245,11 @@ function generateLoginHTML(isError = false) {
                 border: 1px solid #ddd;
                 border-radius: 4px;
                 box-sizing: border-box;
+                transition: border-color 0.3s ease;
+            }
+            input[type="password"]:focus {
+                border-color: #2573b3;
+                outline: none;
             }
             button {
                 width: 100%;
@@ -275,7 +280,7 @@ function generateLoginHTML(isError = false) {
             <form method="POST" action="/login">
                 <div class="form-group">
                     <label for="password">请输入密码</label>
-                    <input type="password" id="password" name="password" required>
+                    <input type="password" id="password" name="password" required ${isError ? 'autofocus' : ''}>
                 </div>
                 <button type="submit">登录</button>
             </form>
