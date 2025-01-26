@@ -1,5 +1,5 @@
-# vps-check
-这是一个简洁高效的域名可视化展示面板，基于Cloudflare Workers构建。它提供了一个直观的界面，让用户能够一目了然地查看他们VPS的状态、注册商、注册日期、过期日期和使用进度，并可在到期前通过TG机器人向用户推送通知。
+# VPS 到期提醒
+基于Cloudflare Workers构建的VPS到期提醒可视化面板，让用户能够一目了然地查看VPS的状态、IP、ASN、国家、城市、注册商、注册日期、过期日期和使用进度，并可在到期前通过TG机器人向用户推送通知。
 
 **DEMO**：<https://vps.yutian81.top>  
 
@@ -50,3 +50,10 @@
 - 密码会缓存到 cookie 里，下次登录时不用再输入密码
 - 再绑定一个KV，KV变量名`VPS_TG_KV.js`，KV空间名随意
 - 其他参数在登录前端页面后的设置页面中填入，会自动保存到KV中
+
+![image](https://github.com/user-attachments/assets/d7489572-1cf7-42ba-aa56-e44123cf15a9)
+
+![image](https://github.com/user-attachments/assets/151bf1d7-e822-40c7-b7ce-f34877577a12)
+
+![image](https://github.com/user-attachments/assets/985d940d-b0fe-49ec-9b38-8244240e3c22)
+
