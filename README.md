@@ -14,8 +14,6 @@
 
 在cf中创建一个workers，复制`_worker.js`中的代码到workers中，点击保存并部署。
 
-[![快速部署到 CF Worker](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/yutian81/vps-check)
-
 ## 变量设置
 | 变量名 | 填写示例 | 说明 | 是否必填 | 
 | ------ | ------- | ------ | ------ |
