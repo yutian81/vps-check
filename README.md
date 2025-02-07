@@ -3,17 +3,12 @@
 
 **DEMO**：<https://vps.yutian81.top>  
 
-## 2024-11-11 更新：每天只进行一次 TG 通知
-- 创建一个KV命令空间：名称随意，假设为`VPS_TG_KV`
-- 在 workers 或 pages 的设置里，绑定 kv 空间，变量名为`VPS_TG_KV`（不能修改），绑定上一步中新建的 kv 空间
-- 最新的代码为仓库中的 `VPS_TG_KV.js` 文件
-
 ## 部署方法
 
 **worker部署**
 
 - 在cf中创建一个workers，复制`_worker.js`中的代码到workers中，点击保存并部署
-- 绑定一个KV，KV变量名`VPS_TG_KV.js`，KV空间名随意
+- 绑定一个KV，KV变量名`VPS_TG_KV`，KV空间名随意
 - 设置以下环境变量：
 
 ## 变量设置
