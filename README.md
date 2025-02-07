@@ -45,7 +45,7 @@
 ## 更高级的玩法：worker-plus.js
 - 只需要设置一个变量：`PASS`，其值为访问前端网页的密码
 - 密码会缓存到 cookie 里，下次登录时不用再输入密码
-- 再绑定一个KV，KV变量名`VPS_TG_KV.js`，KV空间名随意
+- 再绑定一个KV，KV变量名`VPS_TG_KV`，KV空间名随意
 - 其他参数在登录前端页面后的设置页面中填入，会自动保存到KV中
 
 ![image](https://github.com/user-attachments/assets/d7489572-1cf7-42ba-aa56-e44123cf15a9)
