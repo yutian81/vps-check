@@ -625,7 +625,11 @@ async function generateHTML(vpsdata, sitename) {
             </div>
         </div>
         <footer>
-            <p>Copyright © 2025 Yutian81 | <a href="https://github.com/yutian81/vps-check" target="_blank">GitHub Repository</a> | <a href="https://blog.811520.xyz/" target="_blank">yutian81 Blog</a></p>
+            <p>
+               Copyright © 2025 Yutian81&nbsp;|&nbsp;
+               <a href="https://github.com/yutian81/vps-check" target="_blank">GitHub Repository</a>&nbsp;|&nbsp;
+               <a href="https://blog.811520.xyz/" target="_blank">青云志博客</a>
+            </p>
         </footer>
     </body>
     </html>
