@@ -1,14 +1,14 @@
 // 验证密码
 function verifyPassword(password, env) {
-    const password = env.PASS || "123456";
-    return password;
+    const validPassword = env.PASS || "123456";
+    return password === validPassword;
 }
 
 // 从KV获取配置
 async function getConfig(kv) {
     const config = {
         sitename: await kv.get('sitename') || "VPS到期监控",
-        vpsurl: await kv.get('vpsurl') || "", 
+        vpsurl: await kv.get('vpsurl') || "",
         days: await kv.get('days') || "5"
     };
     return config;
@@ -17,14 +17,14 @@ async function getConfig(kv) {
 // 保存配置到KV
 async function saveConfig(kv, config) { 
     await Promise.all([ 
-        kv.put('sitename', config.sitename), 
+        kv.put('sitename', config.sitename),
         kv.put('vpsurl', config.vpsurl),
         kv.put('days', config.days)
     ]);
 }
 
 // tg消息发送函数
-async function sendtgMessage(message, tgid, tgtoken) {
+async function sendtgMessage(message, env) {
     const tgid = env.TGID;
     const tgtoken = env.TGTOKEN;
     if (!tgid || !tgtoken) {
@@ -35,7 +35,7 @@ async function sendtgMessage(message, tgid, tgtoken) {
     const params = {
         chat_id: tgid,
         text: message,
-        parse_mode: 'Markdown',
+        parse_mode: 'Markdown', 
     };
     try {
         await fetch(url, {
@@ -56,7 +56,7 @@ async function ipinfo_query(vpsjson) {
             const ipResponse = await fetch(apiUrl);
             if (ipResponse.ok) {
                 const { country_code, city, asn } = await ipResponse.json();
-                return { ip, country_code, city, asn };
+                return { ip, country_code, city, asn }; 
             } else {
                 console.error(`IP查询失败: ${ip}`);
                 return null;
@@ -66,13 +66,13 @@ async function ipinfo_query(vpsjson) {
             return null;
         }
     }));
-    return ipjson.filter(info => info !== null);  // 过滤掉请求失败的IP信息
+    return ipjson.filter(info => info !== null);
 }
 
 export default {
     async fetch(request, env) {
         const url = new URL(request.url); 
-        const path = url.pathname;
+        const path = url.pathname; 
         const cookies = request.headers.get('Cookie') || '';
         const isAuthenticated = cookies.includes(`password=${env.PASS || "123456"}`);
 
@@ -80,18 +80,18 @@ export default {
         if (path === '/login') {
             if (request.method === 'POST') {
                 const formData = await request.formData();
-                const password = formData.get('password');
+                const password = formData.get('password'); 
                 
                 if (verifyPassword(password, env)) { 
-                    return new Response(null, {
+                    return new Response(null, { 
                         status: 302,
-                        headers: {
+                        headers: { 
                             'Location': '/',
                             'Set-Cookie': `password=${password}; path=/; HttpOnly`
                         } 
                     });
                 } else {
-                    return new Response(generateLoginHTML(true), {
+                    return new Response(generateLoginHTML(true), { 
                         headers: { 'Content-Type': 'text/html' }
                     });
                 }
@@ -111,14 +111,14 @@ export default {
             const config = await getConfig(env.VPS_TG_KV); 
             
             if (request.method === 'POST') {
-                const formData = await request.formData();
+                const formData = await request.formData(); 
                 const newConfig = {
                     sitename: formData.get('sitename'),
                     vpsurl: formData.get('vpsurl'),
                     days: formData.get('days')
                 };
 
-                if (!newConfig.vpsurl) { 
+                if (!newConfig.vpsurl) {  
                     return new Response(generateSettingsHTML(newConfig, true), {
                         headers: { 'Content-Type': 'text/html' }
                     });
@@ -141,7 +141,7 @@ export default {
 
         try {
             const response = await fetch(config.vpsurl);
-            if (!response.ok) { 
+            if (!response.ok) {  
                 throw new Error('网络响应失败');
             }
             const vpsjson = await response.json(); 
@@ -161,7 +161,7 @@ export default {
             // 检查即将到期的VPS并发送 Telegram 消息
             for (const info of vpsdata) {
                 const endday = new Date(info.endday); 
-                const today = new Date(); 
+                const today = new Date();  
                 const daysRemaining = Math.ceil((endday - today) / (1000 * 60 * 60 * 24));
 
                 if (daysRemaining > 0 && daysRemaining <= Number(config.days)) {
@@ -175,7 +175,7 @@ export default {
                                    
                     const lastSent = await env.VPS_TG_KV.get(info.ip);  // 检查是否已发送过通知
                     if (!lastSent || (new Date(lastSent).toISOString().split('T')[0] !== today.toISOString().split('T')[0])) {
-                    await sendtgMessage(message, tgid, tgtoken);
+                    await sendtgMessage(message, env);
                         await env.VPS_TG_KV.put(info.ip, new Date().toISOString());  // 更新 KV 存储的发送时间  
                     }
                 }
@@ -201,7 +201,7 @@ function generateLoginHTML(isError = false) { 
     <html lang="zh-CN">
     <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
         <title>登录 - VPS到期监控</title>
         <link rel="icon" href="https://raw.githubusercontent.com/yutian81/yutian81.github.io/master/assets/images/vpsinfo.png" type="image/png">
         <style>
@@ -216,7 +216,7 @@ function generateLoginHTML(isError = false) { 
             }
             .login-container {
                 background-color: white;
-                padding: 2rem;
+                padding: 2rem; 
                 border-radius: 8px;
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
                 width: 100%;
@@ -304,8 +304,8 @@ function generateSettingsHTML(config, showError = false) {
                 padding: 20px;
             }
             .settings-container {
-                max-width: 800px; 
-                margin: 0 auto;
+                max-width: 800px;  
+                margin: 0 auto; 
                 background-color: white;
                 padding: 2rem;
                 border-radius: 8px; 
@@ -403,9 +403,9 @@ function generateSettingsHTML(config, showError = false) {
                     <label for="vpsurl">存储VPS信息的URL直链 <span class="required">*</span></label>
                     <input type="text" id="vpsurl" name="vpsurl" value="${config.vpsurl}" required>
                 </div>
-                <div class="form-group">
+                <div class="form-group"> 
                     <label for="days">提醒天数</label>
-                    <input type="number" id="days" name="days" value="${config.days}" min="1">
+                    <input type="number" id="days" name="days" value="${config.days}" min="1"> 
                 </div>
                 <div class="buttons">
                     <button type="submit" class="save-btn">保存</button>
@@ -422,7 +422,7 @@ function generateSettingsHTML(config, showError = false) {
 async function generateHTML(vpsdata, sitename) {
     const rows = await Promise.all(vpsdata.map(async info => {
         const startday = new Date(info.startday);
-        const endday = new Date(info.endday);
+        const endday = new Date(info.endday); 
         const today = new Date();
         const totalDays = (endday - startday) / (1000 * 60 * 60 * 24);
         const daysElapsed = (today - startday) / (1000 * 60 * 60 * 24);
@@ -435,7 +435,7 @@ async function generateHTML(vpsdata, sitename) {
         return `
             <tr>
                 <td><span class="status-dot" style="background-color: ${statusColor};" title="${statusText}"></span></td>
-                <td><span class="copy-ip" style="cursor: pointer;" onclick="copyToClipboard('${info.ip}')" title="点击复制">${info.ip}</span></td>
+                <td><span class="copy-ip" style="cursor: pointer;" onclick="copyToClipboard('${info.ip}')" title="点击复制">${info.ip}</span></td> 
                 <td>${info.asn}</td>
                 <td>${info.country_code}</td>
                 <td>${info.city}</td>
