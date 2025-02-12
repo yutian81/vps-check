@@ -23,6 +23,10 @@ async function saveConfig(kv, config) { 
     ]);
 }
 
+function escapeMD2(text) {
+    return text.replace(/([_*[\]()~`>#+\-=|{}.!])/g, '\\$1');
+}
+
 // tg消息发送函数
 async function sendtgMessage(message, env) {
     const tgid = env.TGID;
@@ -31,11 +35,13 @@ async function sendtgMessage(message, env) {
         console.log('缺少变量 TGID 或 TGTOKEN，跳过消息发送');
         return;
     }
+
+    const safemessage = escapeMD2(message);
     const url = `https://api.telegram.org/bot${tgtoken}/sendMessage`; 
     const params = {
         chat_id: tgid,
-        text: message,
-        parse_mode: 'Markdown', 
+        text: safemessage,
+        parse_mode: 'MarkdownV2', 
     };
     try {
         await fetch(url, {
