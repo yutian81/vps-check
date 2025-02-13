@@ -94,13 +94,13 @@ async function getExchangeRates() {
 
 export default {
     async fetch(request, env) {
-        const isAuthenticated = await verifyPassword(password, env, cookies)
+        const isAuthenticated = await verifyPassword(password, env, cookies);
             if (!isAuthenticated) {
               return Response.redirect(`${url.origin}/login`, 302);  
             }
             return return Response.redirect(`${url.origin}/`, 402); 
         
-        const exchangeRates = await getExchangeRates();         
+        const exchangeRates = await getExchangeRates();          
 
         // 路由处理
         const url = new URL(request.url);
