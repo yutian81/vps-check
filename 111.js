@@ -130,4 +130,116 @@ function generateFormHTML(sitename, rows, exchangeRates) {
                 border-radius: 50%;
                 background-color: #2ecc71;
             }
-  
+            .progress-bar {
+                width: 100%;
+                min-width: 100px;
+                background-color: rgba(255, 255, 255, 0.6);
+                border-radius: 4px;
+                overflow: hidden;
+            }
+            .progress {
+                height: 20px;
+                background-color: #2573b3;
+                transition: width 0.3s ease;
+            }
+            footer {
+                background-color: #2573b3;
+                color: white;
+                text-align: center;
+                font-size: 0.9rem;
+                margin-top: 20px;
+                width: 100%;
+                margin-top: auto;
+            }
+            footer a {
+                color: white;
+                text-decoration: none;
+                margin-left: 10px;
+                transition: color 0.3s ease;
+            }
+            footer a:hover {
+                color: #f1c40f;
+            }
+            .store-link {
+                color: #2573b3;
+                text-decoration: none;
+                transition: color 0.3s ease;
+            }
+            .store-link:hover {
+                color: #2980b9;
+            }
+            .copy-ip:hover {
+                color: #2573b3;
+                text-decoration: underline;
+            }
+        </style>
+        <script>
+            function copyToClipboard(text) {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('IP已复制到剪贴板');
+                }).catch(err => {
+                    console.error('复制失败:', err);
+                });
+            }
+        </script>
+    </head>
+    <body>
+        <div class="container">
+            <div class="head">
+                <h1>${sitename}</h1>
+                <a href="/settings" class="settings-link">设置</a>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>状态</th>
+                            <th>IP</th>
+                            <th>ASN</th>
+                            <th>国家</th>
+                            <th>城市</th>
+                            <th>商家</th>
+                            <th>注册日</th>
+                            <th>到期日</th>
+                            <th>剩余天数</th>
+                            <th>年费价格</th>
+                            <th>剩余价值</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rows.join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <footer>
+            <p>
+               Copyright © 2025 Yutian81&nbsp;&nbsp;&nbsp;|
+               <a href="https://github.com/yutian81/vps-check" target="_blank">GitHub Repository</a>&nbsp;&nbsp;&nbsp;|
+               <a href="https://blog.811520.xyz/" target="_blank">青云志博客</a>
+            </p>
+            <p>${currentRate} | ${updatedAt}</p>
+        </footer>
+    </body>
+    </html>
+    `;
+}
+
+// 获取汇率数据
+async function getExchangeRates() {
+    const response = await fetch("https://v2.xxapi.cn/api/allrates");
+    const data = await response.json();
+    if (data.code === 200) {
+        return data.data.rates;
+    }
+    return {};
+}
+
+export default {
+    async fetch(request, env) {
+        const exchangeRates = await getExchangeRates(); 
+
+        // 获取其他逻辑...
+        // 生成 HTML 并返回
+    }
+};
