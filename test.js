@@ -1,15 +1,20 @@
-// 验证密码
-function verifyPassword(password, env) {
+// 验证密码和cookie
+function verifyPassword(password, env, cookies) {
     const validPassword = env.PASS || "123456";
-    return password === validPassword;
+    const validCookies = request.headers.get('Cookie') || '';
+    // 如果密码无效，且没有有效的cookie，返回 false
+    if (password !== validPassword && !validCookies.includes(`password=${validPassword}`)) {
+        return false;
+    }
+    return true;
 }
 
 // 从KV获取配置
-async function getConfig(kv) {
+async function getConfig(kv) { 
     const config = {
-        sitename: await kv.get('sitename') || "VPS到期监控",
-        vpsurl: await kv.get('vpsurl') || "",
-        days: await kv.get('days') || "5"
+        sitename: await kv.get('sitename') || "VPS到期监控",  
+        vpsurl: await kv.get('vpsurl') || "", 
+        days: await kv.get('days') || "5"  
     };
     return config;
 }
@@ -17,7 +22,7 @@ async function getConfig(kv) {
 // 保存配置到KV
 async function saveConfig(kv, config) {
     await Promise.all([
-        kv.put('sitename', config.sitename),
+        kv.put('sitename', config.sitename), 
         kv.put('vpsurl', config.vpsurl),
         kv.put('days', config.days)
     ]);
@@ -36,7 +41,7 @@ async function sendtgMessage(message, env) {
         return;
     }
 
-    const safemessage = escapeMD2(message);
+    const safemessage = escapeMD2(message); 
     const url = `https://api.telegram.org/bot${tgtoken}/sendMessage`;
     const params = {
         chat_id: tgid,
@@ -70,28 +75,59 @@ async function ipinfo_query(vpsjson) {
             }
         } catch (error) {
             console.error(`请求IP信息失败: ${ip}`, error);
-            return null;
+            return null; 
         }
     }));
     return ipjson.filter(info => info !== null) || [];
 }
 
+// 获取汇率数据
+async function getExchangeRates() {
+    const response = await fetch("https://v2.xxapi.cn/api/allrates");
+    const data = await response.json();
+    if (data.code === 200) {
+        return data.data.rates;
+    }
+    return {};
+}
+
+
 export default {
     async fetch(request, env) {
-        const url = new URL(request.url);
-        const path = url.pathname;
-        const cookies = request.headers.get('Cookie') || '';
-        const isAuthenticated = cookies.includes(`password=${env.PASS || "123456"}`);
-        const config = await getConfig(env.VPS_TG_KV);
+        const isAuthenticated = await verifyPassword(password, env, cookies)
+            if (!isAuthenticated) {
+              return Response.redirect(`${url.origin}/login`, 302);  
+            }
+            return return Response.redirect(`${url.origin}/`, 402); 
+        
+        const exchangeRates = await getExchangeRates();         
 
-        // 登录路由
-        if (path === '/login') {
+        // 路由处理
+        const url = new URL(request.url);
+        const path = url.pathname; 
+
+        if (path === '/login') { 
             if (request.method === 'POST') {
+        
+        
+          
+            
+          
+          重试
+          
+        
+          
+            
+          
+          错误原因
+        
+        
+         
                 const formData = await request.formData();
-                const password = formData.get('password');
+                const password = formData.get('password');   
                 
-                if (verifyPassword(password, env)) {
-                    return new Response(null, {
+                if (verifyPassword(password, env)) {  
+                    return new Response(null, { 
                         status: 302,
                         headers: {
                             'Location': '/',
@@ -109,18 +145,27 @@ export default {
             });
         }
 
-        // 验证是否已登录
-        if (!isAuthenticated) {
-            return Response.redirect(`${url.origin}/login`, 302);
-        }
-
-        // 设置路由
         if (path === '/settings') {       
             if (request.method === 'POST') {
                 const formData = await request.formData();
                 const newConfig = {
-                    sitename: formData.get('sitename'),
-                    vpsurl: formData.get('vpsurl'),
+                    sitename: formData.get('sitename'), 
+        
+        
+          
+            
+          
+          重试
+          
+        
+          
+            
+          
+          错误原因
+        
+        
+        
+                    vpsurl: formData.get('vpsurl'), 
                     days: formData.get('days')
                 };
 
@@ -134,18 +179,19 @@ export default {
                 return Response.redirect(url.origin, 302);
             }
 
-            return new Response(generateSettingsHTML(config), {
+            return new Response(generateSettingsHTML(config), { 
                 headers: { 'Content-Type': 'text/html' }
             });
         }
 
-        // 主页路由
-        if (!config.vpsurl) {
-            return Response.redirect(`${url.origin}/settings`, 302);
+        // 处理vps的json文件
+        const config = await getConfig(env.VPS_TG_KV);
+        if (!config.vpsurl) {   
+            return Response.redirect(`${url.origin}/settings`, 302); 
         }
 
         try {
-            const response = await fetch(config.vpsurl);
+            const response = await fetch(config.vpsurl); 
             if (!response.ok) {
                 throw new Error('网络响应失败');
             }
@@ -193,7 +239,7 @@ export default {
             });
 
         } catch (error) {
-            console.error("Fetch error:", error);
+            console.error("Fetch error:", error); 
             return new Response("无法获取或解析VPS的json文件", { status: 500 });
         }
     }
