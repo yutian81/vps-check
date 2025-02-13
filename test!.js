@@ -208,7 +208,7 @@ function generateLoginHTML(isError = false) { 
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
         <title>登录 - VPS到期监控</title>
-        <link rel="icon" href="https://raw.githubusercontent.com/yutian81/yutian81.github.io/master/assets/images/vpsinfo.png" type="image/png">
+        <link rel="icon" href="https://github.com/yutian81/data-source/raw/main/picbed/vps_icon.png" type="image/png">
         <style>
             body {
                 font-family: Arial, sans-serif;
@@ -300,13 +300,16 @@ function generateSettingsHTML(config, showError = false) {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>设置 - VPS到期监控</title>
-        <link rel="icon" href="https://raw.githubusercontent.com/yutian81/yutian81.github.io/master/assets/images/vpsinfo.png" type="image/png">
+        <link rel="icon" href="https://github.com/yutian81/data-source/raw/main/picbed/vps_icon.png" type="image/png">
         <style>
             body {
                 font-family: Arial, sans-serif;
                 background-color: #f4f4f4; 
                 margin: 0;
                 padding: 20px;
+                display: flex;
+                justify-content: center; /* 垂直居中 */
+                align-items: center; /* 水平居中 */
             }
             .settings-container {
                 max-width: 800px;  
@@ -464,7 +467,7 @@ async function generateHTML(vpsdata, sitename) {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>${sitename}</title>
-        <link rel="icon" href="https://raw.githubusercontent.com/yutian81/yutian81.github.io/master/assets/images/vpsinfo.png" type="image/png">
+        <link rel="icon" href="https://github.com/yutian81/data-source/raw/main/picbed/vps_icon.png" type="image/png">
         <style>
             body {
                 font-family: Arial, sans-serif;
