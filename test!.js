@@ -468,7 +468,10 @@ async function generateHTML(vpsdata, sitename) {
             </tr>
         `;
     }));
+    return generateFormHTML(sitename, rows);
+}
 
+function generateFormHTML(sitename, rows) {
     return `
     <!DOCTYPE html>
     <html lang="zh-CN">
@@ -480,39 +483,52 @@ async function generateHTML(vpsdata, sitename) {
         <style>
             body {
                 font-family: Arial, sans-serif;
-                line-height: 1.6;
-                margin: 0;
-                padding: 0;
                 background-color: #f4f4f4;
-                color: #333;
                 display: flex;
                 flex-direction: column;
-                min-height: 100vh;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+                background-image: url('https://github.com/yutian81/data-source/raw/main/picbed/vpscheck_beijing.jpg?v=1.0');
+                background-size: cover;
+                box-sizing: border-box;
             }
             .container {
-                flex: 1;
                 width: 95%;
                 max-width: 1400px;
-                margin: 20px auto;
-                background-color: #fff;
-                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-                border-radius: 5px;
-                overflow: hidden;
+                margin: 40px auto;
+                background-color: rgba(255, 255, 255, 0.6);
+                box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+                border-radius: 8px;
+                overflow: auto;
             }
             .head {
                 display: flex; 
                 justify-content: 
                 space-between; 
                 align-items: center; 
-                background-color: #2573b3; 
-                padding: 20px;
+                background-color: #2573b3;
+                padding: 20px 40px;
             }
             h1 {
-                background-color: #2573b3;
                 color: #fff;
-                padding: 20px;
                 margin: 0;
-                font-size: 1.8rem;
+                text-align: left;
+            }
+            .settings-link {
+                color: white;
+                text-decoration: none;
+                padding: 8px 16px;
+                border: 2px solid white;
+                border-radius: 8px;
+                font-weight: bold;
+                transition: all 0.3s ease;
+                margin-left: auto;
+            }
+            .settings-link:hover {
+                background-color: white;
+                color: #2573b3;
             }
             .table-container {
                 width: 100%;
@@ -521,18 +537,23 @@ async function generateHTML(vpsdata, sitename) {
             table {
                 width: 100%;
                 border-collapse: collapse;
-                white-space: nowrap;
                 table-layout: auto;
             }
             th, td {
                 padding: 12px;
                 text-align: left;
                 border-bottom: 1px solid #ddd;
-                white-space: nowrap;
+                word-wrap: break-word;
+                word-break: break-word;
             }
             th {
-                background-color: #f2f2f2;
+                background-color: rgba(255, 255, 255, 0.6);
                 font-weight: bold;
+            }
+            td:first-child {
+                max-width: 120px;
+                word-wrap: break-word;
+                white-space: normal;
             }
             .status-dot {
                 display: inline-block;
@@ -544,7 +565,7 @@ async function generateHTML(vpsdata, sitename) {
             .progress-bar {
                 width: 100%;
                 min-width: 100px;
-                background-color: #e0e0e0;
+                background-color: rgba(255, 255, 255, 0.6);
                 border-radius: 4px;
                 overflow: hidden;
             }
@@ -556,16 +577,16 @@ async function generateHTML(vpsdata, sitename) {
             footer {
                 background-color: #2573b3;
                 color: white;
-                padding: 5px 0;
                 text-align: center;
                 font-size: 0.9rem;
-                margin-top: 15px;
+                margin-top: 20px;
+                width: 100%;
+                margin-top: auto; /* 使footer推到底部 */
             }
             footer a {
                 color: white;
                 text-decoration: none;
                 margin-left: 10px;
-                font-weight: bold;
                 transition: color 0.3s ease;
             }
             footer a:hover {
@@ -578,19 +599,6 @@ async function generateHTML(vpsdata, sitename) {
             }
             .store-link:hover {
                 color: #2980b9;
-            }
-            .settings-link {
-                color: white;
-                text-decoration: none;
-                padding: 8px 16px;
-                border: 2px solid white;
-                border-radius: 4px;
-                font-weight: bold;
-                transition: all 0.3s ease;
-            }
-            .settings-link:hover {
-                background-color: white;
-                color: #2573b3;
             }
             .copy-ip:hover {
                 color: #2573b3;
@@ -637,8 +645,8 @@ async function generateHTML(vpsdata, sitename) {
         </div>
         <footer>
             <p>
-               Copyright © 2025 Yutian81&nbsp;|&nbsp;
-               <a href="https://github.com/yutian81/vps-check" target="_blank">GitHub Repository</a>&nbsp;|&nbsp;
+               Copyright © 2025 Yutian81&nbsp;&nbsp;&nbsp;|
+               <a href="https://github.com/yutian81/vps-check" target="_blank">GitHub Repository</a>&nbsp;&nbsp;&nbsp;|
                <a href="https://blog.811520.xyz/" target="_blank">青云志博客</a>
             </p>
         </footer>
