@@ -114,9 +114,7 @@ export default {
         }
 
         // 设置路由
-        if (path === '/settings') { 
-            const config = await getConfig(env.VPS_TG_KV); 
-            
+        if (path === '/settings') {          
             if (request.method === 'POST') {
                 const formData = await request.formData(); 
                 const newConfig = {
