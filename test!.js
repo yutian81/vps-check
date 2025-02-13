@@ -15,8 +15,8 @@ async function getConfig(kv) {
 }
 
 // 保存配置到KV
-async function saveConfig(kv, config) { 
-    await Promise.all([ 
+async function saveConfig(kv, config) {
+    await Promise.all([
         kv.put('sitename', config.sitename),
         kv.put('vpsurl', config.vpsurl),
         kv.put('days', config.days)
@@ -37,7 +37,7 @@ async function sendtgMessage(message, env) {
     }
 
     const safemessage = escapeMD2(message);
-    const url = `https://api.telegram.org/bot${tgtoken}/sendMessage`; 
+    const url = `https://api.telegram.org/bot${tgtoken}/sendMessage`;
     const params = {
         chat_id: tgid,
         text: safemessage,
@@ -63,7 +63,7 @@ async function ipinfo_query(vpsjson) {
             const ipResponse = await fetch(apiUrl);
             if (ipResponse.ok) {
                 const { country_code, city, asn } = await ipResponse.json();
-                return { ip, country_code, city, asn }; 
+                return { ip, country_code, city, asn };
             } else {
                 console.error(`IP查询失败: ${ip}`);
                 return null;
@@ -73,32 +73,33 @@ async function ipinfo_query(vpsjson) {
             return null;
         }
     }));
-    return ipjson.filter(info => info !== null);
+    return ipjson.filter(info => info !== null) || [];
 }
 
 export default {
     async fetch(request, env) {
-        const url = new URL(request.url); 
-        const path = url.pathname; 
+        const url = new URL(request.url);
+        const path = url.pathname;
         const cookies = request.headers.get('Cookie') || '';
         const isAuthenticated = cookies.includes(`password=${env.PASS || "123456"}`);
+        const config = await getConfig(env.VPS_TG_KV);
 
         // 登录路由
         if (path === '/login') {
             if (request.method === 'POST') {
                 const formData = await request.formData();
-                const password = formData.get('password'); 
+                const password = formData.get('password');
                 
-                if (verifyPassword(password, env)) { 
-                    return new Response(null, { 
+                if (verifyPassword(password, env)) {
+                    return new Response(null, {
                         status: 302,
-                        headers: { 
+                        headers: {
                             'Location': '/',
                             'Set-Cookie': `password=${password}; path=/; HttpOnly`
-                        } 
+                        }
                     });
                 } else {
-                    return new Response(generateLoginHTML(true), { 
+                    return new Response(generateLoginHTML(true), {
                         headers: { 'Content-Type': 'text/html' }
                     });
                 }
@@ -114,23 +115,23 @@ export default {
         }
 
         // 设置路由
-        if (path === '/settings') {          
+        if (path === '/settings') {       
             if (request.method === 'POST') {
-                const formData = await request.formData(); 
+                const formData = await request.formData();
                 const newConfig = {
                     sitename: formData.get('sitename'),
                     vpsurl: formData.get('vpsurl'),
                     days: formData.get('days')
                 };
 
-                if (!newConfig.vpsurl) {  
+                if (!newConfig.vpsurl) {
                     return new Response(generateSettingsHTML(newConfig, true), {
                         headers: { 'Content-Type': 'text/html' }
                     });
                 }
 
                 await saveConfig(env.VPS_TG_KV, newConfig);
-                return Response.redirect(url.origin, 302); 
+                return Response.redirect(url.origin, 302);
             }
 
             return new Response(generateSettingsHTML(config), {
@@ -139,17 +140,16 @@ export default {
         }
 
         // 主页路由
-        const config = await getConfig(env.VPS_TG_KV);
         if (!config.vpsurl) {
             return Response.redirect(`${url.origin}/settings`, 302);
         }
 
         try {
             const response = await fetch(config.vpsurl);
-            if (!response.ok) {  
+            if (!response.ok) {
                 throw new Error('网络响应失败');
             }
-            const vpsjson = await response.json(); 
+            const vpsjson = await response.json();
             if (!Array.isArray(vpsjson)) {
                 throw new Error('JSON 数据格式不正确');
             }
@@ -165,8 +165,8 @@ export default {
 
             // 检查即将到期的VPS并发送 Telegram 消息
             for (const info of vpsdata) {
-                const endday = new Date(info.endday); 
-                const today = new Date();  
+                const endday = new Date(info.endday);
+                const today = new Date();
                 const daysRemaining = Math.ceil((endday - today) / (1000 * 60 * 60 * 24));
 
                 if (daysRemaining > 0 && daysRemaining <= Number(config.days)) {
@@ -187,20 +187,20 @@ export default {
             }
 
             // 处理 generateHTML 的返回值
-            const htmlContent = await generateHTML(vpsdata, config.sitename); 
+            const htmlContent = await generateHTML(vpsdata, config.sitename);
             return new Response(htmlContent, {
                 headers: { 'Content-Type': 'text/html' },
             });
 
         } catch (error) {
-            console.error("Fetch error:", error); 
+            console.error("Fetch error:", error);
             return new Response("无法获取或解析VPS的json文件", { status: 500 });
         }
     }
 };
 
 // 生成登录页面HTML
-function generateLoginHTML(isError = false) { 
+function generateLoginHTML(isError = false) {
     return `
     <!DOCTYPE html>
     <html lang="zh-CN">
@@ -221,7 +221,7 @@ function generateLoginHTML(isError = false) { 
             }
             .login-container {
                 background-color: white;
-                padding: 2rem; 
+                padding: 2rem;
                 border-radius: 8px;
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
                 width: 100%;
@@ -304,19 +304,22 @@ function generateSettingsHTML(config, showError = false) {
         <style>
             body {
                 font-family: Arial, sans-serif;
-                background-color: #f4f4f4; 
+                background-color: #f4f4f4;
                 margin: 0;
                 padding: 20px;
                 display: flex;
-                justify-content: center; /* 垂直居中 */
-                align-items: center; /* 水平居中 */
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                box-sizing: border-box;
             }
             .settings-container {
-                max-width: 800px;  
-                margin: 0 auto; 
+                max-width: 750px;
+                width: 100%;
+                margin: 0 auto;
                 background-color: white;
                 padding: 2rem;
-                border-radius: 8px; 
+                border-radius: 8px;
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             }
             h1 {
@@ -324,8 +327,17 @@ function generateSettingsHTML(config, showError = false) {
                 margin-bottom: 2rem;
                 text-align: center;
             }
+            .form-group-first {
+                display: flex;
+                gap: 20px;
+                justify-content: space-between;
+            }
+            .form-first {
+                flex: 1; /* 让每个输入框占据可用空间 */
+            }
             .form-group {
-                margin-bottom: 1.5rem;
+                margin-top: 30px;
+                margin-bottom: 20px;
             }
             label {
                 display: block;
@@ -403,17 +415,19 @@ function generateSettingsHTML(config, showError = false) {
             <h1>系统设置</h1>
             <div class="error-message">存储VPS信息的URL直链为必填项</div>
             <form method="POST" action="/settings">
-                <div class="form-group">
-                    <label for="sitename">站点名称</label>
-                    <input type="text" id="sitename" name="sitename" value="${config.sitename}">
+                <div class="form-group-first">
+                    <div class="form-first">
+                        <label for="sitename">站点名称</label>
+                        <input type="text" id="sitename" name="sitename" value="${config.sitename}">
+                    </div>
+                    <div class="form-first">
+                        <label for="days">提醒天数</label>
+                        <input type="number" id="days" name="days" value="${config.days}" min="1">
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="vpsurl">存储VPS信息的URL直链 <span class="required">*</span></label>
                     <input type="text" id="vpsurl" name="vpsurl" value="${config.vpsurl}" required>
-                </div>
-                <div class="form-group"> 
-                    <label for="days">提醒天数</label>
-                    <input type="number" id="days" name="days" value="${config.days}" min="1"> 
                 </div>
                 <div class="buttons">
                     <button type="submit" class="save-btn">保存</button>
@@ -430,7 +444,7 @@ function generateSettingsHTML(config, showError = false) {
 async function generateHTML(vpsdata, sitename) {
     const rows = await Promise.all(vpsdata.map(async info => {
         const startday = new Date(info.startday);
-        const endday = new Date(info.endday); 
+        const endday = new Date(info.endday);
         const today = new Date();
         const totalDays = (endday - startday) / (1000 * 60 * 60 * 24);
         const daysElapsed = (today - startday) / (1000 * 60 * 60 * 24);
@@ -454,7 +468,7 @@ async function generateHTML(vpsdata, sitename) {
                 <td>
                     <div class="progress-bar">
                         <div class="progress" style="width: ${progressPercentage}%;"></div>
-                    </div> 
+                    </div>
                 </td>
             </tr>
         `;
@@ -610,7 +624,7 @@ async function generateHTML(vpsdata, sitename) {
                         <tr>
                             <th>状态</th>
                             <th>IP</th>
-                            <th>ASN</th> 
+                            <th>ASN</th>
                             <th>国家</th>
                             <th>城市</th>
                             <th>商家</th>
