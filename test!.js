@@ -41,7 +41,8 @@ async function sendtgMessage(message, env) {
     const params = {
         chat_id: tgid,
         text: safemessage,
-        parse_mode: 'MarkdownV2', 
+        parse_mode: 'MarkdownV2',
+        // parse_mode: 'HTML', // 使用 HTML 则不需要转义 Markdown 特殊字符
     };
     try {
         await fetch(url, {
