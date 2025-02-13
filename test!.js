@@ -24,7 +24,7 @@ async function saveConfig(kv, config) { 
 }
 
 function escapeMD2(text) {
-    return text.replace(/([_*[\]()~`>#+\-=|{}.!])/g, '\\$1');
+    return text.replace(/([_*[\]()~`>#+\-=|{}.!\\])/g, '\\$1');
 }
 
 // tg消息发送函数
