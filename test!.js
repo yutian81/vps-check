@@ -217,23 +217,26 @@ function generateLoginHTML(isError = false) {
                 justify-content: center;
                 align-items: center;
                 height: 100vh;
-                margin: 0;
+                background-image: url('https://github.com/yutian81/data-source/raw/main/picbed/vpscheck_beijing.jpg?v=1.0');
+                background-size: cover;
+                box-sizing: border-box;
             }
             .login-container {
-                background-color: white;
-                padding: 2rem;
-                border-radius: 8px;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                width: 100%;
                 max-width: 400px;
+                width: 100%;
+                margin: 0 auto;
+                background-color: rgba(255, 255, 255, 0.6);
+                padding: 10px 40px;
+                border-radius: 8px;
+                box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
             }
             h1 {
                 text-align: center;
                 color: #2573b3;
-                margin-bottom: 2rem;
+                margin-bottom: 20px;
             }
             .form-group {
-                margin-bottom: 1rem;
+                margin-bottom: 20px;
             }
             label {
                 display: block;
@@ -242,11 +245,12 @@ function generateLoginHTML(isError = false) {
             }
             input[type="password"] {
                 width: 100%;
-                padding: 0.8rem;
+                padding: 8px;
                 border: 1px solid #ddd;
                 border-radius: 4px;
                 box-sizing: border-box;
                 transition: border-color 0.3s ease;
+                background-color: rgba(255, 255, 255, 0.6);
             }
             input[type="password"]:focus {
                 border-color: #2573b3;
@@ -254,7 +258,7 @@ function generateLoginHTML(isError = false) {
             }
             button {
                 width: 100%;
-                padding: 0.8rem;
+                padding: 8px;
                 background-color: #2573b3;
                 color: white;
                 border: none;
@@ -262,6 +266,7 @@ function generateLoginHTML(isError = false) {
                 cursor: pointer;
                 font-size: 1rem;
                 transition: background-color 0.3s ease;
+                margin-bottom: 20px;
             }
             button:hover {
                 background-color: #1e5c8f;
@@ -305,26 +310,26 @@ function generateSettingsHTML(config, showError = false) {
             body {
                 font-family: Arial, sans-serif;
                 background-color: #f4f4f4;
-                margin: 0;
-                padding: 20px;
                 display: flex;
                 justify-content: center;
                 align-items: center;
                 height: 100vh;
+                background-image: url('https://github.com/yutian81/data-source/raw/main/picbed/vpscheck_beijing.jpg?v=1.0');
+                background-size: cover;
                 box-sizing: border-box;
             }
             .settings-container {
                 max-width: 750px;
                 width: 100%;
                 margin: 0 auto;
-                background-color: white;
-                padding: 2rem;
+                background-color: rgba(255, 255, 255, 0.6);
+                padding: 10px 40px;
                 border-radius: 8px;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
             }
             h1 {
                 color: #2573b3;
-                margin-bottom: 2rem;
+                margin-bottom: 30px;
                 text-align: center;
             }
             .form-group-first {
@@ -337,20 +342,21 @@ function generateSettingsHTML(config, showError = false) {
             }
             .form-group {
                 margin-top: 30px;
-                margin-bottom: 20px;
+                margin-bottom: 30px;
             }
             label {
                 display: block;
-                margin-bottom: 0.5rem;
+                margin-bottom: 5px;
                 color: #666;
             }
             input[type="text"], input[type="number"] {
                 width: 100%;
-                padding: 0.8rem;
+                padding: 8px;
                 border: 1px solid #ddd;
                 border-radius: 4px;
                 box-sizing: border-box;
                 transition: border-color 0.3s ease;
+                background-color: rgba(255, 255, 255, 0.6);
             }
             input[type="text"]:focus, input[type="number"]:focus {
                 border-color: #2573b3;
@@ -358,41 +364,30 @@ function generateSettingsHTML(config, showError = false) {
             }
             .buttons {
                 display: flex;
-                gap: 1rem;
+                gap: 20px;
                 justify-content: center;
-                margin-top: 2rem;
+                margin-top: 20px;
+                margin-bottom: 20px;
             }
-            button {
-                padding: 0.8rem 2rem;
+            button, .back-btn {
+                padding: 6px 15px;
                 border: none;
                 border-radius: 4px;
                 cursor: pointer;
                 font-size: 1rem;
                 transition: background-color 0.3s ease;
-            }
-            .save-btn {
-                background-color: #2573b3;
-                color: white;
-                padding: 0.8rem 2rem;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-                font-size: 1rem;
                 text-decoration: none;
                 display: inline-block;
                 text-align: center;
             }
+            .save-btn {
+                background-color: #2573b3;
+                color: white;
+            }
             .back-btn {
                 background-color: #7f8c8d;
                 color: white;
-                text-decoration: none;
-                padding: 0.8rem 2rem;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-                font-size: 1rem;
-                transition: background-color 0.3s ease;
-            }
+            }            
             .save-btn:hover {
                 background-color: #1e5c8f;
             }
