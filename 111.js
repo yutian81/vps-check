@@ -16,7 +16,7 @@ async function saveConfig(kv, config) {
         await Promise.all([
             kv.put('sitename', config.sitename),
             kv.put('vpsurl', config.vpsurl),
-            kv.put('days', config.days)
+            kv.put('days', config.days) 
         ]);
     } catch (error) {
         console.error("保存配置失败:", error);
@@ -42,6 +42,7 @@ async function getVpsData(kv) {
         console.error('获取 VPS 数据失败:', error);
         throw error;
     }
+    return vpsjson;
 }
 
 // 获取IP地址的国家、城市、ASN信息
@@ -54,8 +55,8 @@ async function ipinfo_query(vpsjson) {
                 console.error(`IP查询失败: ${ip}，状态码: ${ipResponse.status}`);
                 return null;
             }
-            const { country_code, city, asn } = await ipResponse.json(); 
-            return { ip, country_code, city, asn }; 
+            const { country_code, city, asn } = await ipResponse.json();  
+            return { ip, country_code, city, asn };  
         } catch (error) {
             console.error(`请求IP信息失败: ${ip}`, error);
             return null;
@@ -79,59 +80,55 @@ function mergeData(vpsjson, ipjson) {  
 }
 
 // 通过API获取人民币汇率
+// 获取人民币汇率
 async function getRates(env) {
-    const rate_apitoken = env.RATE_API; 
     const rate_apiurls = [
         "https://v2.xxapi.cn/api/exchange?from=USD&to=CNY&amount=1",
         "https://v2.xxapi.cn/api/allrates",
-        `https://v6.exchangerate-api.com/v6/${rateapi}/latest/USD`
+        `https://v6.exchangerate-api.com/v6/${env.RATE_API}/latest/USD`
     ];
 
-    for (let rate_apiurl of rate_apiurls) { 
+    for (let rate_apiurl of rate_apiurls) {
         try {
-            const response = await fetch(rate_apiurls); 
+            const response = await fetch(rate_apiurl);
             if (!response.ok) {
-                console.error(`${rate_apiurl} 请求失败，状态码: ${response.status}`); 
+                console.error(`${rate_apiurl} 请求失败，状态码: ${response.status}`);
                 continue;
             }
 
-            const ratedata = await response.json(); 
-            if (!ratedata.ok) {
-                console.error(`{rate_apiurl} 未返回汇率数据`)
-            
+            const ratedata = await response.json();
             let rawCNY, timestamp;
-            if (rate_apiurl.includes('v6.exchangerate-api.com') && data.result === 'success') {    
-                rawCNY = ratedata.conversion_rates?.CNY;  
-                timestamp = ratedata.time_last_update_unix * 1000; // 转为毫秒    
-            }
-            else if (api.includes('/allrates') && data.code === 200) { 
+
+            if (rate_apiurl.includes('v6.exchangerate-api.com') && ratedata.result === 'success') {
+                rawCNY = ratedata.conversion_rates?.CNY;
+                timestamp = ratedata.time_last_update_unix * 1000; // 转为毫秒
+            } else if (rate_apiurl.includes('/allrates') && ratedata.code === 200) {
                 rawCNY = ratedata.data.rates?.CNY?.rate;
-                timestamp = ratedata.data.update_at; 
-            }
-            else if (api.includes('/exchange') && data.code === 200) { 
+                timestamp = ratedata.data.update_at;
+            } else if (rate_apiurl.includes('/exchange') && ratedata.code === 200) {
                 rawCNY = ratedata.data.rate;
-                timestamp = ratedata.data.update_at; 
+                timestamp = ratedata.data.update_at;
             }
 
-            if (typeof rawCNY === 'number' && !isNaN(rawCNY) && typeof timestamp === 'number') { 
-                return { 
-                    ratejson: { 
-                        rateCNYnum: Number(rawCNY),   
-                        rateTimestamp: new Date(timestamp).toISOString() 
+            if (typeof rawCNY === 'number' && !isNaN(rawCNY) && typeof timestamp === 'number') {
+                return {
+                    ratejson: {
+                        rateCNYnum: Number(rawCNY),
+                        rateTimestamp: new Date(timestamp).toISOString()
                     }
                 };
             } else {
                 throw new Error('数据错误，获取的汇率不是数字');
             }
         } catch (error) {
-            console.error(`${rate_apiurl} API请求失败:`, error); 
+            console.error(`${rate_apiurl} API请求失败:`, error);
         }
     }
 
     console.error('获取汇率数据失败，使用默认值');
     return {
         ratejson: {
-            rateCNYnum: Mumber(7.29),
+            rateCNYnum: Number(7.29),
             rateTimestamp: new Date().toISOString()
         }
     };
@@ -144,6 +141,7 @@ export default {
         const validPassword = env.PASS || "123456";
         const cookies = request.headers.get('Cookie') || '';
         const isAuth = cookies.includes(`password=${validPassword}`);
+        const config = await getConfig(env.VPS_TG_KV);
         await tgTemplate(vpsdata, config, env);
 
         // 验证是否已登录
@@ -205,10 +203,9 @@ export default {
         }
 
         try {
-            const config = await getConfig(env.VPS_TG_KV);
             const vpsjson = await getVpsData(env.VPS_TG_KV);
             if (!vpsjson) throw new Error('VPS 数据为空或无法加载数据');
-            const ipjson = await ipinfo_query(vpsjson);
+            const ipjson = await ipinfo_query(vpsjson); 
             if (!ipjson) throw new Error('IP 信息查询失败');
             const vpsdata = mergeData(vpsjson, ipjson);
             const ratejson = await getRates(env); 
@@ -248,7 +245,7 @@ async function sendtgMessage(message, env) { 
 
     const safemessage = message.replace(/([_*\[\]()~`>#+\-=|{}.!\\])/g, '\\$1'); 
     const url = `https://api.telegram.org/bot${tgtoken}/sendMessage`; 
-    const params = {
+    const params = { 
         chat_id: tgid,
         text: safemessage,
         parse_mode: 'MarkdownV2',
@@ -283,7 +280,7 @@ async function tgTemplate(vpsdata, config, env) {
             ⚠️ 点击续期：[${info.store}](${info.storeURL})`; 
 
             const lastSent = await env.VPS_TG_KV.get(info.ip);  // 检查是否已发送过通知
-            if (!lastSent || lastSent.split('T')[0] !== today) { 
+            if (!lastSent || lastSent.split('T')[0] !== today) {  
                 await sendtgMessage(message, env);
                 await env.VPS_TG_KV.put(info.ip, new Date().toISOString());  // 更新 KV 存储的发送时间
             }
