@@ -23,7 +23,6 @@ async function saveConfig(kv, config) {
     }
 }
 
-
 // 获取 vps json 数据并解析
 async function getVpsData(kv) {
     try {
@@ -38,7 +37,7 @@ async function getVpsData(kv) {
         });
         
         if (!Array.isArray(vpsjson)) throw new Error('VPS数据格式不正确，预期为数组');
-        return vpsjson;
+        return vpsjson; 
     } catch (error) {
         console.error('获取 VPS 数据失败:', error);
         throw error;
@@ -55,8 +54,8 @@ async function ipinfo_query(vpsjson) {
                 console.error(`IP查询失败: ${ip}，状态码: ${ipResponse.status}`);
                 return null;
             }
-            const { country_code, city, asn } = await ipResponse.json();
-            return { ip, country_code, city, asn };
+            const { country_code, city, asn } = await ipResponse.json(); 
+            return { ip, country_code, city, asn }; 
         } catch (error) {
             console.error(`请求IP信息失败: ${ip}`, error);
             return null;
@@ -66,11 +65,11 @@ async function ipinfo_query(vpsjson) {
 }
 
 // 将IP信息与vps信息合并为一个新的数组
-function mergeData(vpsjson, ipjson) {
-    const ipMap = new Map(ipjson.map(ipdata => [ipdata.ip, ipdata]));
+function mergeData(vpsjson, ipjson) {  
+    const ipMap = new Map(ipjson.map(ipdata => [ipdata.ip, ipdata]));  
     return vpsjson.map(vps => {
         const ipdata = ipMap.get(vps.ip); // 从哈希表中查找IP信息
-        return ipdata ? { 
+        return ipdata ? {  
             ...vps, 
             country_code: ipdata.country_code || 'Unknown',
             city: ipdata.city || 'Unknown',
@@ -81,83 +80,98 @@ function mergeData(vpsjson, ipjson) {
 
 // 通过API获取人民币汇率
 async function getRates(env) {
-    const default_rates = { 
-        ratesCNYnum: 7.29,
-        ratesTimestamp: new Date().toISOString()
-    };
-
-    const rateapi = env.RATE_API;
-    const apis = [
-        `https://v6.exchangerate-api.com/v6/${rateapi}/latest/USD`,
-        "https://v2.xxapi.cn/api/allrates"
+    const rate_apitoken = env.RATE_API; 
+    const rate_apiurls = [
+        "https://v2.xxapi.cn/api/exchange?from=USD&to=CNY&amount=1",
+        "https://v2.xxapi.cn/api/allrates",
+        `https://v6.exchangerate-api.com/v6/${rateapi}/latest/USD`
     ];
 
-    for (let api of apis) {
+    for (let rate_apiurl of rate_apiurls) { 
         try {
-            const response = await fetch(api);
+            const response = await fetch(rate_apiurls); 
             if (!response.ok) {
-                console.error(`${api} 请求失败，状态码: ${response.status}`);
+                console.error(`${rate_apiurl} 请求失败，状态码: ${response.status}`); 
                 continue;
             }
 
-            const data = await response.json();
+            const ratedata = await response.json(); 
+            if (!ratedata.ok) {
+                console.error(`{rate_apiurl} 未返回汇率数据`)
+            
             let rawCNY, timestamp;
-
-            if (api.includes('v6.exchangerate-api.com') && data.result === 'success') {
-                rawCNY = data.conversion_rates?.CNY;
-                timestamp = data.time_last_update_unix * 1000; // 转为毫秒
+            if (rate_apiurl.includes('v6.exchangerate-api.com') && data.result === 'success') {    
+                rawCNY = ratedata.conversion_rates?.CNY;  
+                timestamp = ratedata.time_last_update_unix * 1000; // 转为毫秒    
             }
-            else if (api.includes('v2.xxapi.cn') && data.code === 200) {
-                rawCNY = data.data.rates?.CNY?.rate;
-                timestamp = data.data.update_at;
+            else if (api.includes('/allrates') && data.code === 200) { 
+                rawCNY = ratedata.data.rates?.CNY?.rate;
+                timestamp = ratedata.data.update_at; 
+            }
+            else if (api.includes('/exchange') && data.code === 200) { 
+                rawCNY = ratedata.data.rate;
+                timestamp = ratedata.data.update_at; 
             }
 
-            if (typeof rawCNY === 'number' && !isNaN(rawCNY) && typeof timestamp === 'number') {
+            if (typeof rawCNY === 'number' && !isNaN(rawCNY) && typeof timestamp === 'number') { 
                 return { 
-                    ratesInfo: { 
-                        ratesCNYnum: rawCNY, 
-                        ratesTimestamp: new Date(timestamp).toISOString()
+                    ratejson: { 
+                        rateCNYnum: Number(rawCNY),   
+                        rateTimestamp: new Date(timestamp).toISOString() 
                     }
                 };
             } else {
-                throw new Error('无效的汇率数据');
+                throw new Error('数据错误，获取的汇率不是数字');
             }
         } catch (error) {
-            console.error(`${api} API请求失败:`, error);
+            console.error(`${rate_apiurl} API请求失败:`, error); 
         }
     }
 
     console.error('获取汇率数据失败，使用默认值');
-    return { ratesInfo: default_rates };
+    return {
+        ratejson: {
+            rateCNYnum: Mumber(7.29),
+            rateTimestamp: new Date().toISOString()
+        }
+    };
 }
 
-
 export default {
-    async fetch(request, env) {
+    async fetch(request, env) { 
         const url = new URL(request.url);
         const path = url.pathname;
-        const config = await getConfig(env.VPS_TG_KV);
         const validPassword = env.PASS || "123456";
         const cookies = request.headers.get('Cookie') || '';
         const isAuth = cookies.includes(`password=${validPassword}`);
+        await tgTemplate(vpsdata, config, env);
 
+        // 验证是否已登录
+        if (!isAuth) {
+            return Response.redirect(`${url.origin}/login`, 302); 
+        }
+        // 如果没有设置vpsurl则登陆后跳转到设置页面
+        if (!config.vpsurl) { 
+            return Response.redirect(`${url.origin}/settings`, 302);
+        }
+        
         // 登录路由
         if (path === '/login') {
             if (request.method === 'POST') {
-                const formData = await request.formData();
-                const password = formData.get('password');
+                const formData = await request.formData();   
+                const password = formData.get('password');  
                 
                 if (password === validPassword) {
                     return new Response(null, {
-                        status: 302,
+                        status: 302, 
                         headers: {
                             'Location': '/',
                             'Set-Cookie': `password=${password}; path=/; HttpOnly; Secure`
                         }
                     });
                 } else {
-                    return new Response(generateLoginHTML(true), {
-                        headers: { 'Content-Type': 'text/html' }
+                    return new Response(generateLoginHTML(true), {  
+                        headers: { 'Content-Type': 'text/html' } 
                     });
                 }
             }
@@ -166,14 +180,9 @@ export default {
             });
         }
 
-        // 验证是否已登录
-        if (!isAuth) {
-            return Response.redirect(`${url.origin}/login`, 302);
-        }
-
         // 设置路由
         if (path === '/settings') {       
-            if (request.method === 'POST') {
+            if (request.method === 'POST') { 
                 const formData = await request.formData();
                 const newConfig = {
                     sitename: formData.get('sitename'),
@@ -186,8 +195,7 @@ export default {
                         headers: { 'Content-Type': 'text/html' }
                     });
                 }
-
-                await saveConfig(env.VPS_TG_KV, newConfig);
+                await saveConfig(env.VPS_TG_KV, newConfig); 
                 return Response.redirect(url.origin, 302);
             }
 
@@ -196,36 +204,30 @@ export default {
             });
         }
 
-        // 主页路由
-        if (!config.vpsurl) {
-            return Response.redirect(`${url.origin}/settings`, 302);
-        }
-
         try {
+            const config = await getConfig(env.VPS_TG_KV);
             const vpsjson = await getVpsData(env.VPS_TG_KV);
             if (!vpsjson) throw new Error('VPS 数据为空或无法加载数据');
             const ipjson = await ipinfo_query(vpsjson);
             if (!ipjson) throw new Error('IP 信息查询失败');
             const vpsdata = mergeData(vpsjson, ipjson);
-            await tgTemplate(vpsdata, config, env);
-            const ratesInfo = await getRates(env);
+            const ratejson = await getRates(env); 
 
             // 处理 generateHTML 的返回值
-            const htmlContent = await generateHTML(vpsdata, ratesInfo, config.sitename);
-            return new Response(htmlContent, {
+            const htmlContent = await generateHTML(vpsdata, ratejson, config.sitename); 
+            return new Response(htmlContent, { 
                 headers: { 'Content-Type': 'text/html' },
             });
-
         } catch (error) {
-            console.error("Fetch error:", error);
+            console.error("Fetch error:", error);     
             let errorMessage = "无法获取或解析VPS的json文件";
-            if (error.message.includes('VPS 数据为空')) {
+            if (error.message.includes('VPS 数据为空')) { 
                 errorMessage = "请检查 vpsurl 直链是否可以有效访问";
-            } else if (error.message.includes('IP 信息查询失败')) {
+            } else if (error.message.includes('IP 信息查询失败')) {    
                 errorMessage = "IP 信息查询失败，可能是外部服务不可用";
-            } else if (error.message.includes('无法加载数据')) {
+            } else if (error.message.includes('无法加载数据')) { 
                 errorMessage = "请检查 vpsurl 直链中的 json 内容是否正确";
-            } else if (error.message.includes('JSON 格式错误')) {
+            } else if (error.message.includes('JSON 格式错误')) {  
                 errorMessage = "VPS 或 IP 数据格式错误，请检查数据源";
             } else {
                 errorMessage = "未知错误，请稍后重试";
@@ -236,16 +238,16 @@ export default {
 };
 
 // tg消息发送函数
-async function sendtgMessage(message, env) {
-    const tgid = env.TGID;
+async function sendtgMessage(message, env) { 
+    const tgid = env.TGID; 
     const tgtoken = env.TGTOKEN;
     if (!tgid || !tgtoken) {
         console.log('缺少变量 TGID 或 TGTOKEN，跳过消息发送');
-        return;
+        return; 
     }
 
     const safemessage = message.replace(/([_*\[\]()~`>#+\-=|{}.!\\])/g, '\\$1'); 
-    const url = `https://api.telegram.org/bot${tgtoken}/sendMessage`;
+    const url = `https://api.telegram.org/bot${tgtoken}/sendMessage`; 
     const params = {
         chat_id: tgid,
         text: safemessage,
@@ -255,7 +257,7 @@ async function sendtgMessage(message, env) {
 
     try {
         await fetch(url, {
-            method: 'POST',
+            method: 'POST', 
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(params),
         });
@@ -266,22 +268,22 @@ async function sendtgMessage(message, env) {
 
 // 构建TG消息模板并在到期前发送提醒
 async function tgTemplate(vpsdata, config, env) {
-    await Promise.all(vpsdata.map(async (info) => {
+    await Promise.all(vpsdata.map(async (info) => { 
         const today = new Date().toISOString().split('T')[0]; // 获取今天的日期（YYYY-MM-DD）
-        const endday = new Date(info.endday); 
+        const endday = new Date(info.endday);  
         const daysRemaining = Math.ceil((endday - today) / (1000 * 60 * 60 * 24));
 
         if (daysRemaining > 0 && daysRemaining <= Number(config.days)) {
             const message = `🚨 [VPS到期提醒] 🚨
             ====================
-            🌍 VPS位置: ${info.country_code} | ${info.city}
+            🌍 VPS位置: ${info.country_code} | ${info.city} 
             💻 IP 地址: ${info.ip}
             ⏳ 剩余时间: ${daysRemaining} 天
             📅 到期日期: ${info.endday}
-            ⚠️ 点击续期：[${info.store}](${info.storeURL})`;
+            ⚠️ 点击续期：[${info.store}](${info.storeURL})`; 
 
             const lastSent = await env.VPS_TG_KV.get(info.ip);  // 检查是否已发送过通知
-            if (!lastSent || lastSent.split('T')[0] !== today) {
+            if (!lastSent || lastSent.split('T')[0] !== today) { 
                 await sendtgMessage(message, env);
                 await env.VPS_TG_KV.put(info.ip, new Date().toISOString());  // 更新 KV 存储的发送时间
             }
