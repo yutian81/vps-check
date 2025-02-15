@@ -124,7 +124,7 @@ async function getRates(env) {
 
     console.error('获取汇率数据失败，使用默认值');
     return {
-        rateCNYnum: Number(7.29),
+        rateCNYnum: Number(7.29), 
         rateTimestamp: new Date().toISOString()
     };
 }
@@ -209,7 +209,7 @@ export default {
 
                 if (password === validPassword) {
                     return new Response(null, {
-                        status: 302,
+                        status: 302, 
                         headers: {
                             'Location': '/',
                             'Set-Cookie': `password=${password}; path=/; HttpOnly; Secure`
@@ -270,7 +270,7 @@ export default {
         } catch (error) {
             console.error("Fetch error:", error);
             let errorMessage = "无法获取或解析VPS的json文件";
-            if (error.message.includes('VPS 数据为空')) {
+            if (error.message.includes('VPS 数据为空')) { 
                 errorMessage = "请检查 vpsurl 直链是否可以有效访问";
             } else if (error.message.includes('IP 信息查询失败')) {
                 errorMessage = "IP 信息查询失败，可能是外部服务不可用";
@@ -324,11 +324,11 @@ async function generateHTML(vpsdata, ratejson, sitename) { 
             </tr>
         `;
     }));
-    return generateFormHTML(vpsdata, sitename, rows, ratesInfo);
+    return generateFormHTML(sitename, rows, ratejson);
 }
 
-function generateFormHTML(_vpsdata, sitename, rows, ratesInfo) {
-    const { ratesCNYnum, ratesTimestamp } = ratesInfo;
+function generateFormHTML(sitename, rows, ratejson) {
+    const { rateCNYnum, rateTimestamp } = ratejson;
     const BeijingTime = new Date(ratesTimestamp).toLocaleString('zh-CN', { 
         timeZone: 'Asia/Shanghai', 
         hour12: false  // 使用24小时制
@@ -501,7 +501,7 @@ function generateFormHTML(_vpsdata, sitename, rows, ratesInfo) {
                 Copyright © 2025 Yutian81&nbsp;&nbsp;&nbsp;| 
                 <a href="https://github.com/yutian81/vps-check" target="_blank">GitHub Repository</a>&nbsp;&nbsp;&nbsp;| 
                 <a href="https://blog.811520.xyz/" target="_blank">青云志博客</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-                汇率更新时间: ${BeijingTime} | 当前汇率: 1USD = ${ratesCNYnum?.toFixed(2) || '获取中'}CNY
+                汇率更新时间: ${BeijingTime} | 当前汇率: 1USD = ${rateCNYnum?.toFixed(2) || '获取中'}CNY
             </p>
         </footer>
     </body>
