@@ -300,11 +300,9 @@ async function generateHTML(vpsdata, ratejson, sitename) { 
 
         // 计算年费价格和剩余价值
         const price = parseFloat(info.price.replace(/[^\d.]/g, ''));
-        const { rateCNYnum } = ratejson;
+        const rateCNYnum = ratejson?.rateCNYnum || 7.29;
         const ValueUSD = (price / 365) * daysRemaining;
-        const ValueCNY = parseFloat(ValueUSD) * rateCNYnum; 
-        // const finalRatesCNYnum = isNaN(ratesCNYnum) ? 0 : ratesCNYnum;
-        // const ValueCNY = parseFloat(ValueUSD) * finalRatesCNYnum; 
+        const ValueCNY = parseFloat(ValueUSD) * rateCNYnum;
         const formatValueUSD = `${ValueUSD.toFixed(2)}USD`;  // 格式化为两位小数的字符串
         const formatValueCNY = `${ValueCNY.toFixed(2)}CNY`;
         
