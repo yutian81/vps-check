@@ -163,8 +163,10 @@ async function tgTemplate(mergeData, config, env) {
 
             const lastSent = await env.VPS_TG_KV.get(info.ip);  // 检查是否已发送过通知
             if (!lastSent || lastSent.split('T')[0] !== today) {
-                await sendtgMessage(message, env);
-                await env.VPS_TG_KV.put(info.ip, new Date().toISOString());
+                const isSent = await sendtgMessage(message, env);
+                if (isSent) {
+                    await env.VPS_TG_KV.put(info.ip, new Date().toISOString());
+                }
             }
         }
     }));
@@ -186,13 +188,19 @@ async function sendtgMessage(message, env) {
     };
 
     try {
-        await fetch(tgApiurl, {
+        const response = await fetch(tgApiurl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(params),
         });
+        if (!response.ok) {
+            console.error('Telegram 消息推送失败，状态码:', response.status);
+            return false;
+        }
+        return true;
     } catch (error) {
         console.error('Telegram 消息推送失败:', error);
+        return false;
     }
 }
 
