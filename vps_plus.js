@@ -22,9 +22,9 @@ async function saveConfig(env, newConfig) {
     const kv = env.VPS_TG_KV; 
     try {
         await Promise.all([
-            kv.put('sitename', newConfig.sitename),
-            kv.put('vpsurl', newConfig.vpsurl),
-            kv.put('days', newConfig.days)
+            kv.put('sitename', newConfig.sitename.trim()),
+            kv.put('vpsurl', newConfig.vpsurl.trim()),
+            kv.put('days', newConfig.days.trim())
         ]);
     } catch (error) {
         console.error("保存KV数据失败:", error);
@@ -33,7 +33,7 @@ async function saveConfig(env, newConfig) {
 }
 
 // 获取 vps json 数据并解析
-async function getVpsData(env) {
+async function getVpsData(env) { 
     const { vpsurl } = await getConfig(env);
     if (!vpsurl) throw new Error('请在设置界面输入存储VPS信息的URL直链并保存');
 
