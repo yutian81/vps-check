@@ -38,7 +38,15 @@ async function getVpsData(env) {
     if (!vpsurl) throw new Error('请在设置界面输入存储VPS信息的URL直链并保存');
 
     try {
-        const response = await fetch(vpsurl);
+        // 添加请求头，避免缓存
+        const requestOptions = {
+            headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+            }
+        };
+        const response = await fetch(vpsurl, requestOptions);
         if (!response.ok) {
             throw new Error(`获取VPS数据失败, HTTP状态码: ${response.status}`);
         }
@@ -423,7 +431,7 @@ function generateFormHTML(sitename, rows, ratejson) {
                 white-space: nowrap;  /* 禁止所有表头换行 */
             }
             td:nth-child(2) {
-                max-width: 180px;
+                max-width: 160px;
                 word-wrap: break-word;
                 word-break: break-word;
                 white-space: normal;  /* 允许第二列换行 */
