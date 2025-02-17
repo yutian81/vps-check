@@ -18,7 +18,7 @@
 | 变量名 | 填写示例 | 说明 | 是否必填 | 
 | ------ | ------- | ------ | ------ |
 | PASS  | 123456 | 前端访问密码，默认为`123456` | 是 |
-| RATE_API  | f5bc********7d1e66**** | 到此处[注册](https://www.exchangerate-api.com/)免费API KEY | 是 |
+| RATE_API  | f5bc********7d1e66**** | 到此处[注册](https://www.exchangerate-api.com/)免费的汇率API KEY | 是 |
 | TGID | 652***4200 | TG机器人ID，不需要通知可不填 | 否 |
 | TGTOKEN | 60947***43:BBCrcWzLb000000vdtt0jy000000-uKM7p8	 | TG机器人TOKEN，不需要通知可不填 | 否 |
 
