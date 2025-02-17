@@ -18,13 +18,13 @@ async function getConfig(env) {
 }
 
 // 保存配置到KV
-async function saveConfig(env, config) {
+async function saveConfig(env, newConfig) {
     const kv = env.VPS_TG_KV; 
     try {
         await Promise.all([
-            kv.put('sitename', config.sitename),
-            kv.put('vpsurl', config.vpsurl),
-            kv.put('days', config.days)
+            kv.put('sitename', newConfig.sitename),
+            kv.put('vpsurl', newConfig.vpsurl),
+            kv.put('days', newConfig.days)
         ]);
     } catch (error) {
         console.error("保存KV数据失败:", error);
@@ -249,8 +249,8 @@ async function handleSettings(request, config, env) {
         return Response.redirect(new URL('/', request.url).toString(), 302);
     }
 
-    return new Response(generateSettingsHTML(config), {  
-        headers: { 'Content-Type': 'text/html' }
+    return new Response(generateSettingsHTML(config), {    
+        headers: { 'Content-Type': 'text/html' }   
     });
 }
 
@@ -291,7 +291,7 @@ export default {
         const path = url.pathname;
         const validPassword = env.PASS || "123456";
         const cookies = request.headers.get('Cookie') || '';
-        const isAuth = cookies.includes(`password=${validPassword}`);
+        const isAuth = cookies.includes(`password=${validPassword}`); 
         const config = await getConfig(env);
 
         if (!isAuth && path !== '/login') {
