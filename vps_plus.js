@@ -19,7 +19,7 @@ async function getConfig(env) {
 
 // 保存配置到KV
 async function saveConfig(env, config) {
-    const kv = env.VPS_TG_KV;
+    const kv = env.VPS_TG_KV; 
     try {
         await Promise.all([
             kv.put('sitename', config.sitename),
@@ -51,7 +51,7 @@ async function getVpsData(env) {
             throw new Error(`获取VPS数据失败, HTTP状态码: ${response.status}`);
         }
         const vpsjson = await response.json();
-        if (!Array.isArray(vpsjson)) {
+        if (!Array.isArray(vpsjson) || vpsjson.length === 0) { 
             throw new Error('VPS数据格式格式不是json');
         }
         return vpsjson;
@@ -63,7 +63,7 @@ async function getVpsData(env) {
 
 // 获取IP地址的国家、城市、ASN信息
 async function ipinfo_query(vpsjson) {
-    const ipjson = await Promise.all(vpsjson.map(async ({ ip }) => {
+    const ipjson = await Promise.all(vpsjson.map(async ({ ip }) => { 
         const ipapiUrl = `https://ip.eooce.com/${ip}`;
         try {
             const ipresponse = await fetch(ipapiUrl);
@@ -224,7 +224,7 @@ async function handleLogin(request, validPassword) {
             });
         }
     }
-    return new Response(generateLoginHTML(), {
+    return new Response(generateLoginHTML(), { 
         headers: { 'Content-Type': 'text/html' }
     });
 }
@@ -232,24 +232,24 @@ async function handleLogin(request, validPassword) {
 // 处理设置路由
 async function handleSettings(request, config, env) {
     if (request.method === 'POST') {
-        const formData = await request.formData();
+        const formData = await request.formData(); 
         const newConfig = {
             sitename: formData.get('sitename'),
-            vpsurl: formData.get('vpsurl'),
+            vpsurl: formData.get('vpsurl'), 
             days: formData.get('days')
         };
 
         if (!newConfig.vpsurl) {
-            return new Response(generateSettingsHTML(newConfig, true), {
-                headers: { 'Content-Type': 'text/html' }
+            return new Response(generateSettingsHTML(newConfig, true), { 
+                headers: { 'Content-Type': 'text/html' } 
             });
         }
 
-        await saveConfig(env, newConfig);
-        return Response.redirect('/settings', 302);
+        await saveConfig(env, newConfig); 
+        return Response.redirect(new URL('/', request.url).toString(), 302);
     }
 
-    return new Response(generateSettingsHTML(config), {
+    return new Response(generateSettingsHTML(config), {  
         headers: { 'Content-Type': 'text/html' }
     });
 }
@@ -298,13 +298,13 @@ export default {
             return Response.redirect(`${url.origin}/login`, 302);
         }
 
-        if (!config.vpsurl && path !== '/settings') {
+        if (!config.vpsurl && path !== '/settings') {  
             return Response.redirect(`${url.origin}/settings`, 302);
         }
 
         switch (path) {
             case '/login':
-                return await handleLogin(request, validPassword);  // 登录路由
+                return await handleLogin(request, validPassword);  // 登录路由 
             case '/settings':
                 return await handleSettings(request, config, env);  // 设置路由
             default:
@@ -314,10 +314,10 @@ export default {
 };
 
 // 生成主页HTML
-async function generateHTML(mergeData, ratejson, sitename) {
+async function generateHTML(mergeData, ratejson, sitename) { 
     const rows = await Promise.all(mergeData.map(async info => {
         // const startday = new Date(info.startday);
-        const today = new Date();
+        const today = new Date(); 
         const endday = new Date(info.endday);
         // const totalDays = (endday - startday) / (1000 * 60 * 60 * 24);
         const daysRemaining = Math.ceil((endday - today) / (1000 * 60 * 60 * 24));
@@ -329,7 +329,7 @@ async function generateHTML(mergeData, ratejson, sitename) {
         const price = parseFloat(info.price.replace(/[^\d.]/g, ''));
         const rateCNYnum = ratejson?.rateCNYnum || 7.29;
         const ValueUSD = (price / 365) * daysRemaining;
-        const ValueCNY = ValueUSD * rateCNYnum;
+        const ValueCNY = ValueUSD * rateCNYnum; 
         const formatValueUSD = `${ValueUSD.toFixed(2)}USD`;  // 格式化为两位小数的字符串
         const formatValueCNY = `${ValueCNY.toFixed(2)}CNY`;
         
@@ -643,9 +643,9 @@ function generateSettingsHTML(config, showError = false) {
         <link rel="icon" href="https://github.com/yutian81/data-source/raw/main/picbed/vps_icon.png" type="image/png">
         <style>
             body {
-                font-family: Arial, sans-serif;
+                font-family: Arial, sans-serif; 
                 background-color: #f4f4f4;
-                display: flex;
+                display: flex; 
                 justify-content: center;
                 align-items: center;
                 height: 100vh;
@@ -660,7 +660,7 @@ function generateSettingsHTML(config, showError = false) {
                 background-color: rgba(255, 255, 255, 0.6);
                 padding: 10px 40px;
                 border-radius: 8px;
-                box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+                box-shadow: 0 0 4px rgba(0, 0, 0, 0.2); 
             }
             h1 {
                 color: #2573b3;
@@ -744,24 +744,24 @@ function generateSettingsHTML(config, showError = false) {
         <div class="settings-container">
             <h1>系统设置</h1>
             <div class="error-message">存储VPS信息的URL直链为必填项</div>
-            <form method="POST" action="/settings">
+            <form method="POST" action="/settings"> 
                 <div class="form-group-first">
                     <div class="form-first">
-                        <label for="sitename">站点名称</label>
+                        <label for="sitename">站点名称</label> 
                         <input type="text" id="sitename" name="sitename" value="${config.sitename}">
                     </div>
                     <div class="form-first">
-                        <label for="days">提醒天数</label>
-                        <input type="number" id="days" name="days" value="${config.days}" min="1">
+                        <label for="days">提醒天数</label> 
+                        <input type="number" id="days" name="days" value="${config.days}" min="1"> 
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="vpsurl">存储VPS信息的URL直链 <span class="required">*</span></label>
+                    <label for="vpsurl">存储VPS信息的URL直链 <span class="required">*</span></label> 
                     <input type="text" id="vpsurl" name="vpsurl" value="${config.vpsurl}" required>
                 </div>
                 <div class="buttons">
-                    <button type="submit" class="save-btn">保存</button>
-                    <a href="/" class="back-btn">返回</a>
+                    <button type="submit" class="save-btn">保存</button> 
+                    <a href="/" class="back-btn">返回</a> 
                 </div>
             </form>
         </div>
