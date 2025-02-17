@@ -151,20 +151,20 @@ async function tgTemplate(mergeData, config, env) {
     await Promise.all(mergeData.map(async (info) => {
         const endday = new Date(info.endday);
         const daysRemaining = Math.ceil((endday - new Date(today)) / (1000 * 60 * 60 * 24));
-
         if (daysRemaining > 0 && daysRemaining <= Number(config.days)) {
-            const message = `🚨 [VPS到期提醒] 🚨
-            ====================
-            🌍 VPS位置: ${info.country_code} | ${info.city}
-            💻 IP 地址: ${info.ip}
-            ⏳ 剩余时间: ${daysRemaining} 天
-            📅 到期日期: ${info.endday}
-            ⚠️ 点击续期：[${info.store}](${info.storeURL})`;
+            const message =
+`🚨 [VPS到期提醒] 🚨
+====================
+🌍 VPS位置: ${info.country_code} | ${info.city}
+💻 IP 地址: ${info.ip}
+⏳ 剩余时间: ${daysRemaining} 天
+📅 到期日期: ${info.endday}
+⚠️ 点击续期：[${info.store}](${info.storeURL})`;
 
             const lastSent = await env.VPS_TG_KV.get(info.ip);  // 检查是否已发送过通知
             if (!lastSent || lastSent.split('T')[0] !== today) {
-                const isSent = await sendtgMessage(message, env);
-                if (isSent) {
+                const isSent = await sendtgMessage(message, env); 
+                if (isSent) { 
                     await env.VPS_TG_KV.put(info.ip, new Date().toISOString());
                 }
             }
@@ -173,13 +173,13 @@ async function tgTemplate(mergeData, config, env) {
 }
 
 // tg消息发送函数
-async function sendtgMessage(message, env) {
+async function sendtgMessage(message, env) { 
     if (!env.TGID || !env.TGTOKEN) {
         console.log('缺少变量 TGID 或 TGTOKEN, 跳过消息发送');
         return;
     }
 
-    const safemessage = message.replace(/([_*\[\]()~`>#+\-=|{}.!\\])/g, '\\$1');
+    const safemessage = message.replace(/([_*\[\]()~`>#+\-=|{}.!\\])/g, '\\$1'); 
     const tgApiurl = `https://api.telegram.org/bot${env.TGTOKEN}/sendMessage`;
     const params = {
         chat_id: env.TGID,
@@ -205,7 +205,7 @@ async function sendtgMessage(message, env) {
 }
 
 // 处理登录路由
-async function handleLogin(request, validPassword) {
+async function handleLogin(request, validPassword) { 
     if (request.method === 'POST') {
         const formData = await request.formData();
         const password = formData.get('password');
@@ -316,19 +316,17 @@ export default {
 // 生成主页HTML
 async function generateHTML(mergeData, ratejson, sitename) { 
     const rows = await Promise.all(mergeData.map(async info => {
-        // const startday = new Date(info.startday);
-        const today = new Date(); 
+        const today = new Date();
         const endday = new Date(info.endday);
-        // const totalDays = (endday - startday) / (1000 * 60 * 60 * 24);
         const daysRemaining = Math.ceil((endday - today) / (1000 * 60 * 60 * 24));
         const isExpired = today > endday;
-        const statusColor = isExpired ? '#e74c3c' : '#2ecc71';
-        const statusText = isExpired ? '已过期' : '正常';
+        const statusColor = isExpired ? '#e74c3c' : '#2ecc71'; 
+        const statusText = isExpired ? '已过期' : '正常';    
 
         // 计算年费价格和剩余价值
-        const price = parseFloat(info.price.replace(/[^\d.]/g, ''));
-        const rateCNYnum = ratejson?.rateCNYnum || 7.29;
-        const ValueUSD = (price / 365) * daysRemaining;
+        const price = parseFloat(info.price.replace(/[^\d.]/g, '')); 
+        const rateCNYnum = ratejson?.rateCNYnum || 7.29; 
+        const ValueUSD = (price / 365) * daysRemaining;  
         const ValueCNY = ValueUSD * rateCNYnum; 
         const formatValueUSD = `${ValueUSD.toFixed(2)}USD`;  // 格式化为两位小数的字符串
         const formatValueCNY = `${ValueCNY.toFixed(2)}CNY`;
