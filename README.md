@@ -48,7 +48,8 @@
     "endday": "2027-01-19",
     "price": "11.99USD",
     "store": "Dasabo",
-    "storeURL": "https://my.dasabo.com/" }
+    "storeURL": "https://my.dasabo.com/"
+  }
 ]
 ```
 请修改其中信息为你自己的vps，并将这个内容存为json文件，放到公开仓库或私有gist生成一个直链  
