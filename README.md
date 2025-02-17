@@ -1,7 +1,10 @@
 # VPS 到期提醒
-基于Cloudflare Workers构建的VPS到期提醒可视化面板，让用户能够一目了然地查看VPS的状态、IP、ASN、国家、城市、注册商、注册日期、过期日期和使用进度，并可在到期前通过TG机器人向用户推送通知。
+基于Cloudflare Workers构建的VPS到期提醒可视化面板，让用户能够一目了然地查看VPS的状态、IP、ASN、国家、城市、注册商、注册日期、过期日期、`年费价格`、`剩余价值`，并可在到期前通过TG机器人向用户推送通知。
 
-**DEMO**：<https://vps.yutian81.top>  
+**DEMO**：<https://vps.yutian81.top>
+
+- **_worker.js**：不显示年费和剩余价值的版本  
+- **vps_plus**：显示年费和剩余价值的版本
 
 ## 部署方法
 
@@ -15,16 +18,37 @@
 | 变量名 | 填写示例 | 说明 | 是否必填 | 
 | ------ | ------- | ------ | ------ |
 | PASS  | 123456 | 前端访问密码，默认为`123456` | 是 |
+| RATE_API  | f5bc********7d1e66**** | 获取实时汇率的免费API KEY | 是 |
 | TGID | 652***4200 | TG机器人ID，不需要通知可不填 | 否 |
 | TGTOKEN | 60947***43:BBCrcWzLb000000vdtt0jy000000-uKM7p8	 | TG机器人TOKEN，不需要通知可不填 | 否 |
 
 ## 域名信息json文件格式
-**示例**
+**示例**，其中的`price`需要保留2位小数，支持美元（USD）和人民币（CNY）；`store`指商家名称，`storeURL`指商家链接
 ```
 [
-  { "ip": "209.138.178.63", "startday": "2025-01-11", "endday": "2026-01-10", "store": "DartNode", "storeURL": "https://app.dartnode.com/" },
-  { "ip": "141.150.63.49", "startday": "2024-12-31", "endday": "2026-02-14", "store": "ChunkServe", "storeURL": "https://billing.chunkserve.com/" },
-  { "ip": "31.88.142.101", "startday": "2025-01-19", "endday": "2027-01-19", "store": "Dasabo", "storeURL": "https://my.dasabo.com/" }
+  {
+    "ip": "209.138.178.63",
+    "startday": "2025-01-11",
+    "endday": "2026-01-10",
+    "price": "11.99USD",
+    "store": "DartNode",
+    "storeURL": "https://app.dartnode.com/"
+  },
+  {
+    "ip": "141.150.63.49",
+    "startday": "2024-12-31",
+    "endday": "2026-02-14",
+    "price": "11.99USD",
+    "store": "ChunkServe",
+    "storeURL": "https://billing.chunkserve.com/"
+  },
+  {
+    "ip": "31.88.142.101",
+    "startday": "2025-01-19",
+    "endday": "2027-01-19",
+    "price": "11.99USD",
+    "store": "Dasabo",
+    "storeURL": "https://my.dasabo.com/" }
 ]
 ```
 请修改其中信息为你自己的vps，并将这个内容存为json文件，放到公开仓库或私有gist生成一个直链  
@@ -54,5 +78,6 @@ https://gist.githubusercontent.com/用户名/591b80ed80baabcdef369a330bb8e88e/ra
 
 ![image](https://github.com/user-attachments/assets/6fbef2e9-6071-4605-b961-ca785f18d0f9)
 
-![image](https://github.com/user-attachments/assets/985d940d-b0fe-49ec-9b38-8244240e3c22)
+![image](https://github.com/user-attachments/assets/38041a99-6f0f-4ee6-9a59-f663389c5b59)
+
 
