@@ -4,7 +4,7 @@
 **DEMO**：<https://vps.yutian81.top>
 
 - **_worker.js**：不显示年费和剩余价值的版本  
-- **vps_plus**：显示年费和剩余价值的版本
+- **vps_plus.js**：显示年费和剩余价值的版本
 
 ## 部署方法
 
