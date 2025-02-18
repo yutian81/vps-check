@@ -9,7 +9,7 @@ async function getConfig(env) {
     return {
       sitename: sitename || "VPS到期监控",
       vpsurl: vpsurl || "",
-      days: days || "5",
+      days: Number(days) || 5,
     };
   } catch (error) {
     console.error("获取KV数据失败:", error);
@@ -276,11 +276,7 @@ async function handleRoot(env, config) {
 
     await tgTemplate(mergeData, config, env);
 
-    const htmlContent = await generateHTML(
-      mergeData,
-      ratejson,
-      config.sitename
-    );
+    const htmlContent = await generateHTML(mergeData, ratejson, config.sitename);
     return new Response(htmlContent, {
       headers: { "Content-Type": "text/html" },
     });
