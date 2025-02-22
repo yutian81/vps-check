@@ -63,7 +63,7 @@ async function getVpsData(env) {
 
 // 获取IP地址的国家、城市、ASN信息
 async function ipinfo_query(vpsjson) {
-  const ipjson = await Promise.all(
+  const ipjson = await Promise.allSettled(
     vpsjson.map(async ({ ip }) => {
       const ipapiUrl = `https://ip.eooce.com/${ip}`;
       try {
@@ -80,7 +80,9 @@ async function ipinfo_query(vpsjson) {
       }
     })
   );
-  return ipjson.filter((info) => info !== null);
+  return ipjson
+    .filter(result => result.status === 'fulfilled' && result.value !== null)
+    .map(result => result.value);
 }
 
 // 将IP信息与vps信息合并为一个新的数组
@@ -99,68 +101,85 @@ function getMergeData(vpsjson, ipjson) {
   });
 }
 
-// 通过API获取人民币汇率
+// 获取实时汇率数据
 async function getRates(env) {
-  const rate_apiurls = [
-    "https://v2.xxapi.cn/api/exchange?from=USD&to=CNY&amount=1",
-    "https://v2.xxapi.cn/api/allrates",
-    `https://v6.exchangerate-api.com/v6/${env.RATE_API}/latest/USD`,
+  const apis = [
+    {
+      url: "https://v2.xxapi.cn/api/exchange?from=USD&to=CNY&amount=1",
+      parser: data => data.code === 200 && data.data?.rate
+        ? { rawCNY: data.data.rate, timestamp: data.data.update_at }
+        : null
+    },
+    {
+      url: "https://v2.xxapi.cn/api/allrates",
+      parser: data => data.code === 200 && data.data?.rates?.CNY?.rate
+        ? { rawCNY: data.data.rates.CNY.rate, timestamp: data.data.update_at }
+        : null
+    },
+    {
+      url: `https://v6.exchangerate-api.com/v6/${env.RATE_API}/latest/USD`,
+      parser: data => data.result === "success" && data.conversion_rates?.CNY
+        ? { rawCNY: data.conversion_rates.CNY, timestamp: data.time_last_update_unix * 1000 }
+        : null
+    }
   ];
 
-  for (let rate_apiurl of rate_apiurls) {
-    try {
-      const response = await fetch(rate_apiurl);
-      if (!response.ok) {
-        console.error(`${rate_apiurl} 请求失败，状态码: ${response.status}`);
-        continue;
-      }
+  let rawCNY = null, timestamp = null;
 
-      const ratedata = await response.json();
-      let rawCNY, timestamp;
-
-      if (
-        rate_apiurl.includes("v6.exchangerate-api.com") &&
-        ratedata.result === "success"
-      ) {
-        rawCNY = ratedata.conversion_rates?.CNY;
-        timestamp = ratedata.time_last_update_unix * 1000; // 转为毫秒
-      } else if (rate_apiurl.includes("/allrates") && ratedata.code === 200) {
-        rawCNY = ratedata.data.rates?.CNY?.rate;
-        timestamp = ratedata.data.update_at;
-      } else if (rate_apiurl.includes("/exchange") && ratedata.code === 200) {
-        rawCNY = ratedata.data.rate;
-        timestamp = ratedata.data.update_at;
-      }
-
-      if (typeof rawCNY === "number" && !isNaN(rawCNY)) {
-        return {
-          rateCNYnum: Number(rawCNY),
-          rateTimestamp: new Date(timestamp).toISOString(),
-        };
-      } else {
-        throw new Error("数据错误，获取的汇率不是数字");
-      }
-    } catch (error) {
-      console.error(`${rate_apiurl} API请求失败:`, error);
+  // 遍历 API 配置，获取数据
+  for (const api of apis) {
+    const parsed = await fetchData(api);
+    if (parsed) {
+      rawCNY ||= parsed.rawCNY; // 获取汇率
+      timestamp ||= parsed.timestamp; // 获取时间戳
+      if (rawCNY !== null && timestamp) break; // 如果都获取到了有效数据，跳出循环
     }
   }
 
-  console.error("获取汇率数据失败，使用默认值");
-  return {
-    rateCNYnum: Number(7.29),
-    rateTimestamp: new Date().toISOString(),
-  };
+  // 判断是否获得了有效的汇率数字
+  if (typeof rawCNY === "number" && !isNaN(rawCNY)) {
+    return {
+      rateCNYnum: Number(rawCNY),
+      rateTimestamp: new Date(timestamp).toISOString()
+    };
+  } else {
+    console.error("获取汇率数据失败，使用默认值");
+    return {
+      rateCNYnum: 7.29,
+      rateTimestamp: new Date().toISOString()
+    };
+  }
+}
+
+// API 请求逻辑，包括超时控制、错误处理和解析数据
+async function fetchData(api) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 1000); // 1秒超时
+  try {
+    const response = await fetch(api.url, { signal: controller.signal });
+    if (!response.ok) {
+      console.error(`API 请求失败 ${api.url}，状态码：${response.status}`);
+      return null;
+    }
+    const data = await response.json();
+    return api.parser(data); // 返回解析后的数据
+  } catch (err) {
+    if (err.name !== "AbortError") {
+      console.error(`API 请求错误 ${api.url}:`, err);
+    }
+    return null;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }
 
 // 构建TG消息模板并在到期前发送提醒
 async function tgTemplate(mergeData, config, env) {
   const today = new Date().toISOString().split("T")[0];
-  await Promise.all(
+  await Promise.allSettled(
     mergeData.map(async (info) => {
       const endday = new Date(info.endday);
-      const daysRemaining = Math.ceil(
-        (endday - new Date(today)) / (1000 * 60 * 60 * 24)
-      );
+      const daysRemaining = Math.ceil((endday - new Date(today)) / (1000 * 60 * 60 * 24));
       if (daysRemaining > 0 && daysRemaining <= Number(config.days)) {
         const message = `🚨 [VPS到期提醒] 🚨
 ====================
@@ -173,9 +192,7 @@ async function tgTemplate(mergeData, config, env) {
         const lastSent = await env.VPS_TG_KV.get(info.ip); // 检查是否已发送过通知
         if (!lastSent || lastSent.split("T")[0] !== today) {
           const isSent = await sendtgMessage(message, env);
-          if (isSent) {
-            await env.VPS_TG_KV.put(info.ip, new Date().toISOString());
-          }
+          if (isSent) await env.VPS_TG_KV.put(info.ip, new Date().toISOString());
         }
       }
     })
@@ -275,7 +292,6 @@ async function handleRoot(env, config) {
     const ratejson = await getRates(env);
 
     await tgTemplate(mergeData, config, env);
-
     const htmlContent = await generateHTML(mergeData, ratejson, config.sitename);
     return new Response(htmlContent, {
       headers: { "Content-Type": "text/html" },
@@ -335,32 +351,34 @@ async function generateHTML(mergeData, ratejson, sitename) {
       const statusText = isExpired ? "已过期" : "正常";
 
       // 计算年费价格和剩余价值
-      const price = parseFloat(info.price.replace(/[^\d.]/g, ""));
+      const [, price, unit] = info.price.match(/^([\d.]+)([A-Za-z]+)$/) || [];
+      const priceNum = parseFloat(price);
       const rateCNYnum = ratejson?.rateCNYnum || 7.29;
-      const ValueUSD = (price / 365) * daysRemaining;
-      const ValueCNY = ValueUSD * rateCNYnum;
-      const formatValueUSD = `${ValueUSD.toFixed(2)}USD`; // 格式化为两位小数的字符串
+      const [ValueUSD, ValueCNY] = unit === "USD"
+        ? [(priceNum / 365) * daysRemaining, (priceNum / 365) * daysRemaining * rateCNYnum]
+        : [(priceNum / 365) * daysRemaining / rateCNYnum, (priceNum / 365) * daysRemaining];
+      const formatValueUSD = `${ValueUSD.toFixed(2)}USD`;
       const formatValueCNY = `${ValueCNY.toFixed(2)}CNY`;
 
       return `
-            <tr>
-                <td><span class="status-dot" style="background-color: ${statusColor};" title="${statusText}"></span></td>
-                <td><span class="copy-ip" style="cursor: pointer;" onclick="copyToClipboard('${
-                  info.ip
-                }')" title="点击复制">${info.ip}</span></td>
-                <td>${info.asn}</td>
-                <td>${info.country_code}</td>
-                <td>${info.city}</td>
-                <td><a href="${
-                  info.storeURL
-                }" target="_blank" class="store-link">${info.store}</a></td>
-                <td>${info.startday}</td>
-                <td>${info.endday}</td>
-                <td>${isExpired ? "已过期" : daysRemaining + "天"}</td>
-                <td>${info.price}</td>
-                <td>${formatValueUSD} | ${formatValueCNY}</td>
-            </tr>
-        `;
+        <tr>
+            <td><span class="status-dot" style="background-color: ${statusColor};" title="${statusText}"></span></td>
+            <td><span class="copy-ip" style="cursor: pointer;" onclick="copyToClipboard('${
+              info.ip
+            }')" title="点击复制">${info.ip}</span></td>
+            <td>${info.asn}</td>
+            <td>${info.country_code}</td>
+            <td>${info.city}</td>
+            <td><a href="${
+              info.storeURL
+            }" target="_blank" class="store-link">${info.store}</a></td>
+            <td>${info.startday}</td>
+            <td>${info.endday}</td>
+            <td>${isExpired ? "已过期" : daysRemaining + "天"}</td>
+            <td>${info.price}</td>
+            <td>${formatValueUSD} | ${formatValueCNY}</td>
+        </tr>
+      `;
     })
   );
   return generateFormHTML(sitename, rows, ratejson);
@@ -444,19 +462,26 @@ function generateFormHTML(sitename, rows, ratejson) {
                 padding: 12px;
                 text-align: left;
                 border-bottom: 1px solid #ddd;
-                /*word-wrap: break-word;*/
-                /*word-break: break-word;*/
+                white-space: nowrap;
             }
             th {
                 background-color: rgba(255, 255, 255, 0.6);
-                font-weight: bold;
-                white-space: nowrap;  /* 禁止所有表头换行 */
+                font-weight: bold;   
             }
             td:nth-child(2) {
                 max-width: 160px;
                 word-wrap: break-word;
                 word-break: break-word;
-                white-space: normal;  /* 允许第二列换行 */
+                white-space: normal;
+            }
+            @media (max-width: 768px) {
+              td:nth-child(2) {
+                width: auto;
+                max-width: none;
+                min-width: 180px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+              }
             }
             .status-dot {
                 display: inline-block;
