@@ -565,9 +565,7 @@ function generateFormHTML(sitename, rows, ratejson) {
                 Copyright © 2025 Yutian81&nbsp;&nbsp;&nbsp;| 
                 <a href="https://github.com/yutian81/vps-check" target="_blank">GitHub Repository</a>&nbsp;&nbsp;&nbsp;| 
                 <a href="https://blog.811520.xyz/" target="_blank">青云志博客</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-                汇率更新时间: ${BeijingTime} | 当前汇率: 1USD = ${
-    rateCNYnum?.toFixed(2) || "获取中"
-  }CNY
+                汇率更新时间: ${BeijingTime} | 当前汇率: 1USD = ${rateCNYnum?.toFixed(2) || "获取中"}CNY
             </p>
         </footer>
     </body>
