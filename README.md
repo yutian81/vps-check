@@ -38,7 +38,7 @@
     "ip": "141.150.63.49",
     "startday": "2024-12-31",
     "endday": "2026-02-14",
-    "price": "11.99USD",
+    "price": "88.88CNY",
     "store": "ChunkServe",
     "storeURL": "https://billing.chunkserve.com/"
   },
