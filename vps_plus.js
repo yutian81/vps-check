@@ -324,15 +324,15 @@ export default {
       return Response.redirect(`${url.origin}/login`, 302);
     }
 
-    if (!config.vpsurl && path !== "/settings") {
+    if (!config.vpsurl && path !== "/settings" && path !=="/login") {
       return Response.redirect(`${url.origin}/settings`, 302);
     }
 
     switch (path) {
       case "/login":
-        return await handleLogin(request, validPassword); // 登录路由
+        return await handleLogin(request, validPassword); // 登录路由 
       case "/settings":
-        return await handleSettings(request, config, env); // 设置路由
+        return await handleSettings(request, config, env); // 设置路由 
       default:
         return await handleRoot(env, config); // 根路由
     }
