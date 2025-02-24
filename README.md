@@ -10,7 +10,7 @@
 
 **worker部署**
 
-- 在cf中创建一个workers，复制`_worker.js`中的代码到workers中，点击保存并部署
+- 在cf中创建一个workers，复制`js`代码到workers中，点击保存并部署
 - 绑定一个KV，KV变量名`VPS_TG_KV`，KV空间名随意
 - 设置以下环境变量：
 
