@@ -23,7 +23,7 @@
 | TGTOKEN | 60947***43:BBCrcWzLb000000vdtt0jy000000-uKM7p8	 | TG机器人TOKEN，不需要通知可不填 | 否 |
 
 ## 域名信息json文件格式
-**示例**，其中的`price`需要保留2位小数，支持美元（USD）和人民币（CNY）；`store`指商家名称，`storeURL`指商家链接
+**示例**，其中的`price`为`年费价格`，需要保留2位小数，支持美元（USD）和人民币（CNY）；`store`指商家名称，`storeURL`指商家链接
 ```
 [
   {
