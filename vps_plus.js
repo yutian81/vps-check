@@ -154,7 +154,7 @@ async function getRates(env) {
 // API 请求逻辑，包括超时控制、错误处理和解析数据
 async function fetchData(api) {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 1000); // 1秒超时
+  const timeoutId = setTimeout(() => controller.abort(), 500);
   try {
     const response = await fetch(api.url, { signal: controller.signal });
     if (!response.ok) {
