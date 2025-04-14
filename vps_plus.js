@@ -337,6 +337,19 @@ export default {
         return await handleRoot(env, config); // 根路由
     }
   },
+  
+  async scheduled(event, env, ctx) {
+    try {
+      const config = await getConfig(env);
+      const vpsjson = await getVpsData(env);
+      const ipjson = await ipinfo_query(vpsjson);
+      const mergeData = getMergeData(vpsjson, ipjson);
+      await tgTemplate(mergeData, config, env);
+      console.log("Corn 执行时间:", new Date().toISOString());
+    } catch (error) {
+      console.error("Cron 执行失败:", error);
+    }
+  },
 };
 
 // 生成主页HTML
