@@ -425,15 +425,11 @@ async function generateHTML(mergeData, ratejson, sitename) {
         return `
           <tr>
               <td><span class="status-dot" style="background-color: ${statusColor};" title="${statusText}"></span></td>
-              <td><span class="copy-ip" style="cursor: pointer;" onclick="copyToClipboard('${
-                info.ip
-              }')" title="点击复制">${info.ip}</span></td>
+              <td><span class="copy-ip" style="cursor: pointer;" onclick="copyToClipboard('${info.ip}')" title="点击复制">${info.ip}</span></td>
               <td>${info.asn}</td>
               <td>${info.country_code}</td>
               <td>${info.city}</td>
-              <td><a href="${
-                info.storeURL
-              }" target="_blank" class="store-link">${info.store}</a></td>
+              <td><a href="${info.storeURL}" target="_blank" class="store-link">${info.store}</a></td>
               <td>${info.startday}</td>
               <td>${info.endday}</td>
               <td>${isExpired ? "已过期" : daysRemaining + "天"}</td>
@@ -722,9 +718,7 @@ function generateLoginHTML(isError = false) {
               <form method="POST" action="/login">
                   <div class="form-group">
                       <label for="password">请输入密码</label>
-                      <input type="password" id="password" name="password" required ${
-                        isError ? "autofocus" : ""
-                      }>
+                      <input type="password" id="password" name="password" required ${isError ? "autofocus" : ""}>
                   </div>
                   <button type="submit">登录</button>
               </form>
