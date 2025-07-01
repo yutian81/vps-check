@@ -467,7 +467,7 @@ function generateFormHTML(sitename, rows, ratejson) {
                   align-items: center;
                   height: 100vh;
                   margin: 0;
-                  background-image: url('https://github.com/yutian81/data-source/raw/main/picbed/vpscheck_beijing.jpg?v=1.0');
+                  background-image: url('https://pan.811520.xyz/cdn/back.webp');
                   background-size: cover;
                   box-sizing: border-box;
               }
@@ -649,7 +649,7 @@ function generateLoginHTML(isError = false) {
                   justify-content: center;
                   align-items: center;
                   height: 100vh;
-                  background-image: url('https://github.com/yutian81/data-source/raw/main/picbed/vpscheck_beijing.jpg?v=1.0');
+                  background-image: url('https://pan.811520.xyz/cdn/back.webp');
                   background-size: cover;
                   box-sizing: border-box;
               }
@@ -746,7 +746,7 @@ function generateSettingsHTML(config, showError = false) {
                   justify-content: center;
                   align-items: center;
                   height: 100vh;
-                  background-image: url('https://github.com/yutian81/data-source/raw/main/picbed/vpscheck_beijing.jpg?v=1.0');
+                  background-image: url('https://pan.811520.xyz/cdn/back.webp');
                   background-size: cover;
                   box-sizing: border-box;
               }
