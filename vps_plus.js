@@ -700,18 +700,12 @@ function generateFormHTML(sitename, rows, ratejson) {
         </div>
         <footer>
           <p>
-            <span>Copyright © 2025 Yutian81</span>
-            <span>|</span>
+            <span>Copyright © 2025 Yutian81</span><span>|</span>
             <a href="https://github.com/yutian81/vps-check" style="text-decoration: none;">
-              <i class="fab fa-github"></i> GitHub Repo
-            </a>
-            <span>|</span>
+              <i class="fab fa-github"></i> GitHub Repo</a><span>|</span>
             <a href="https://blog.811520.xyz/" style="text-decoration: none;">
-              <i class="fas fa-blog"></i> 青云志博客
-            </a>
-            <span>|</span>
-            <span><i class="fas fa-clock"></i> 汇率更新时间: ${BeijingTime}</span>
-            <span>|</span>
+              <i class="fas fa-blog"></i> 青云志博客</a><span>|</span>
+            <span><i class="fas fa-clock"></i> 汇率更新时间: ${BeijingTime}</span><span>|</span>
             <span><i class="fas fa-dollar-sign"></i> 当前汇率: 1USD = ${rateCNYnum ? `${rateCNYnum.toFixed(2)}CNY` : "获取中"}</span>
           </p>
         </footer>
