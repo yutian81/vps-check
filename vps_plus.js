@@ -530,6 +530,7 @@ function generateFormHTML(sitename, rows, ratejson) {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>${sitename}</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
         <link rel="icon" href="https://github.com/yutian81/data-source/raw/main/picbed/vps_icon.png" type="image/png">
         <style>
             body {
@@ -625,17 +626,21 @@ function generateFormHTML(sitename, rows, ratejson) {
             footer {
                 background-color: #2573b3;
                 color: white;
-                text-align: center;
                 font-size: 0.9rem;
-                margin-top: 20px;
                 width: 100%;
                 margin-top: auto; /* 使footer推到底部 */
             }
+            footer p {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              flex-wrap: wrap;
+              gap: 12px;
+            }
             footer a {
-                color: white;
-                text-decoration: none;
-                margin-left: 10px;
-                transition: color 0.3s ease;
+              color: white;
+              text-decoration: none;
+              transition: color 0.3s ease;
             }
             footer a:hover {
                 color: #f1c40f;
@@ -673,17 +678,17 @@ function generateFormHTML(sitename, rows, ratejson) {
                 <table>
                     <thead>
                         <tr>
-                            <th>状态</th>
-                            <th>IP地址</th>
-                            <th>ASN</th>
-                            <th>国家</th>
-                            <th>城市</th>
-                            <th>商家</th>
-                            <th>注册日</th>
-                            <th>到期日</th>
-                            <th>剩余天数</th>
-                            <th>年费价格</th>
-                            <th>剩余价值</th>
+                          <th><i class="fas fa-circle-notch"></i> 状态</th>
+                          <th><i class="fas fa-network-wired"></i> IP地址</th>
+                          <th><i class="fas fa-hashtag"></i> ASN</th>
+                          <th><i class="fas fa-flag"></i> 国家</th>
+                          <th><i class="fas fa-city"></i> 城市</th>
+                          <th><i class="fas fa-store"></i> 商家</th>
+                          <th><i class="fas fa-calendar-plus"></i> 注册日</th>
+                          <th><i class="fas fa-calendar-check"></i> 到期日</th>
+                          <th><i class="fas fa-hourglass-half"></i> 剩余天数</th>
+                          <th><i class="fas fa-dollar-sign"></i> 年费价格</th>
+                          <th><i class="fas fa-coins"></i> 剩余价值</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -693,12 +698,21 @@ function generateFormHTML(sitename, rows, ratejson) {
             </div>
         </div>
         <footer>
-            <p>
-                Copyright © 2025 Yutian81&nbsp;&nbsp;&nbsp;| 
-                <a href="https://github.com/yutian81/vps-check" target="_blank">GitHub Repository</a>&nbsp;&nbsp;&nbsp;| 
-                <a href="https://blog.811520.xyz/" target="_blank">青云志博客</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-                汇率更新时间: ${BeijingTime} | 当前汇率: 1USD = ${rateCNYnum ? `${rateCNYnum.toFixed(2)}CNY` : "获取中"}
-            </p>
+          <p>
+            <span>Copyright © 2025 Yutian81</span>
+            <span>|</span>
+            <a href="https://github.com/yutian81/vps-check" style="text-decoration: none;">
+              <i class="fab fa-github"></i> GitHub Repo
+            </a>
+            <span>|</span>
+            <a href="https://blog.811520.xyz/" style="text-decoration: none;">
+              <i class="fas fa-blog"></i> 青云志博客
+            </a>
+            <span>|</span>
+            <span><i class="fas fa-clock"></i> 汇率更新时间: ${BeijingTime}</span>
+            <span>|</span>
+            <span><i class="fas fa-dollar-sign"></i> 当前汇率: 1USD = ${rateCNYnum ? `${rateCNYnum.toFixed(2)}CNY` : "获取中"}</span>
+          </p>
         </footer>
     </body>
     </html>
