@@ -599,7 +599,8 @@ function generateFormHTML(sitename, rows, ratejson) {
             }
             th {
                 background-color: rgba(255, 255, 255, 0.6);
-                font-weight: bold;   
+                font-weight: bold;
+                color: #2573B3;
             }
             td:nth-child(2) {
                 max-width: 160px;
