@@ -85,6 +85,17 @@ async function fetchIPInfo(ip, { urlBuilder, dataParser }, timeout = 3000) {
 async function ipinfo_query(vpsjson) {
   const IP_API = [
     {
+      name: 'ipinfo.io',
+      urlBuilder: (ip) => `https://ipinfo.io/${ip}/json`,
+      dataParser: (data) => ({
+        country_code: data.country || 'Unknown',
+        city: data.city || 'Unknown',
+        asn: (data.org?.split(' ')[0] || '').startsWith('AS') 
+          ? data.org.split(' ')[0] 
+          : 'Unknown'
+      })
+    },
+    {
       name: 'ip.eooce',
       urlBuilder: (ip) => `https://ip.eooce.com/${ip}`,
       dataParser: (data) => ({
@@ -92,19 +103,9 @@ async function ipinfo_query(vpsjson) {
         city: data.city || 'Unknown',
         asn: data.asn || 'Unknown'
       })
-    },
-    {
-      name: 'ipinfo.io',
-      urlBuilder: (ip) => `https://ipinfo.io/${ip}/json`,
-      dataParser: (data) => ({
-        country_code: data.country || 'Unknown',
-        city: data.city || 'Unknown',
-        asn: (data.org?.split(' ')[0] || '').startsWith('AS') 
-        ? data.org.split(' ')[0] 
-        : 'Unknown'
-      })
     }
   ];
+  
   const ipjson = await Promise.allSettled(
     vpsjson.map(async ({ ip }) => {
       try {
@@ -203,7 +204,7 @@ async function getRates(env) {
 // API 请求逻辑，包括超时控制、错误处理和解析数据
 async function fetchData(api) {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 500);
+  const timeoutId = setTimeout(() => controller.abort(), 1000);
   try {
     const response = await fetch(api.url, { signal: controller.signal });
     if (!response.ok) {
@@ -230,13 +231,13 @@ async function tgTemplate(mergeData, config, env) {
       const endday = new Date(info.endday);
       const daysRemaining = Math.ceil((endday - new Date(today)) / (1000 * 60 * 60 * 24));
       if (daysRemaining > 0 && daysRemaining <= Number(config.days)) {
-        const message = `🚨 [VPS到期提醒] 🚨
+        const message = `<b>🚨 [VPS到期提醒] 🚨</b>
 ====================
-🌍 VPS位置: ${info.country_code} | ${info.city}
-💻 IP 地址: ${info.ip}
-⏳ 剩余时间: ${daysRemaining} 天
-📅 到期日期: ${info.endday}
-⚠️ 点击续期：[${info.store}](${info.storeURL})`;
+<b>🌍 VPS位置:</b> ${info.country_code} | ${info.city}
+<b>💻 IP 地址:</b> <code>${info.ip}</code>
+<b>⏳ 剩余时间:</b> ${daysRemaining} 天
+<b>📅 到期日期:</b> ${info.endday}
+<b>⚠️ 点击续期:</b> <a href="${info.storeURL}">${info.store}</a>`;
 
         const lastSent = await env.VPS_TG_KV.get(info.ip); // 检查是否已发送过通知
         if (!lastSent || lastSent.split("T")[0] !== today) {
@@ -255,12 +256,11 @@ async function sendtgMessage(message, env) {
     return;
   }
 
-  const safemessage = message.replace(/([_*\[\]()~`>#+\-=|{}.!\\])/g, "\\$1");
   const tgApiurl = `https://api.telegram.org/bot${env.TGTOKEN}/sendMessage`;
   const params = {
     chat_id: env.TGID,
-    text: safemessage,
-    parse_mode: "MarkdownV2",
+    text: message,
+    parse_mode: "HTML",
   };
 
   try {
@@ -442,6 +442,30 @@ export default {
   },
 };
 
+function toLocaleEmoji(countryCode) {
+  if (!countryCode || countryCode === 'Unknown') return '🌐';
+  
+  // 特殊地区代码映射
+  const specialCases = {
+    EU: '🇪🇺',  // 欧盟
+    UN: '🇺🇳',  // 联合国
+    HK: '🇭🇰',  // 香港
+    MO: '🇲🇴',  // 澳门
+    TW: '🇹🇼'   // 台湾（注意政治敏感性）
+  };
+  
+  const normalizedCode = countryCode.toUpperCase();
+  if (specialCases[normalizedCode]) return specialCases[normalizedCode];
+  
+  // 标准国家代码转 Emoji
+  try {
+    return String.fromCodePoint(...[...normalizedCode]
+      .map(c => 0x1F1E6 - 65 + c.charCodeAt(0)));
+  } catch {
+    return '🌐'; // 转换失败时回退
+  }
+}
+
 // 生成主页HTML
 async function generateHTML(mergeData, ratejson, sitename) {
   const rows = await Promise.all(
@@ -468,7 +492,7 @@ async function generateHTML(mergeData, ratejson, sitename) {
             <td><span class="status-dot" style="background-color: ${statusColor};" title="${statusText}"></span></td>
             <td><span class="copy-ip" style="cursor: pointer;" onclick="copyToClipboard('${info.ip}')" title="点击复制">${info.ip}</span></td>
             <td>${info.asn}</td>
-            <td>${info.country_code}</td>
+            <td>${toLocaleEmoji(info.country_code)} ${info.country_code}</td>
             <td>${info.city}</td>
             <td><a href="${info.storeURL}" target="_blank" class="store-link">${info.store}</a></td>
             <td>${info.startday}</td>
