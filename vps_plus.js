@@ -444,25 +444,34 @@ export default {
 
 function toLocaleEmoji(countryCode) {
   if (!countryCode || countryCode === 'Unknown') return '🌐';
-  
+
   // 特殊地区代码映射
   const specialCases = {
-    EU: '🇪🇺',  // 欧盟
-    UN: '🇺🇳',  // 联合国
-    HK: '🇭🇰',  // 香港
-    MO: '🇲🇴',  // 澳门
-    TW: '🇹🇼'   // 台湾（注意政治敏感性）
+    EU: '🇪🇺',
+    UN: '🇺🇳',
+    HK: '<img src="https://flagcdn.com/16x12/hk.png" alt="HK" class="flag-img" style="vertical-align:middle;margin-right:4px;">',
+    MO: '<img src="https://flagcdn.com/16x12/mo.png" alt="MO" class="flag-img" style="vertical-align:middle;margin-right:4px;">',
+    TW: '<img src="https://flagcdn.com/16x12/tw.png" alt="TW" class="flag-img" style="vertical-align:middle;margin-right:4px;">'
   };
-  
+
   const normalizedCode = countryCode.toUpperCase();
   if (specialCases[normalizedCode]) return specialCases[normalizedCode];
-  
+
   // 标准国家代码转 Emoji
   try {
-    return String.fromCodePoint(...[...normalizedCode]
-      .map(c => 0x1F1E6 - 65 + c.charCodeAt(0)));
+    const emoji = String.fromCodePoint(...[...normalizedCode].map(c => 0x1F1E6 - 65 + c.charCodeAt(0)));
+    
+    // 检测浏览器是否支持彩色 Emoji
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.font = '32px "Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji", sans-serif';
+    const width = ctx.measureText(emoji).width;
+    if (width === 0) throw new Error('Emoji unsupported');
+
+    return emoji;
   } catch {
-    return '🌐'; // 转换失败时回退
+    // 回退为图片显示
+    return `<img src="https://flagcdn.com/16x12/${normalizedCode.toLowerCase()}.png" alt="${normalizedCode}" class="flag-img" style="vertical-align:middle;margin-right:4px;">`;
   }
 }
 
@@ -645,13 +654,13 @@ function generateFormHTML(sitename, rows, ratejson) {
             }
         </style>
         <script>
-            function copyToClipboard(text) {
-                navigator.clipboard.writeText(text).then(() => {
-                    alert('IP已复制到剪贴板');
-                }).catch(err => {
-                    console.error('复制失败:', err);
-                });
-            }
+          function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('IP已复制到剪贴板');
+            }).catch(err => {
+                console.error('复制失败:', err);
+            });
+          }
         </script>
     </head>
     <body>
