@@ -442,37 +442,23 @@ export default {
   },
 };
 
-function toLocaleEmoji(countryCode) {
-  if (!countryCode || countryCode === 'Unknown') return '🌐';
+function toLocaleFlag(countryCode) {
+  if (!countryCode || countryCode === 'Unknown') {
+    return '<img src="https://flagcdn.com/16x12/un.png" alt="Unknown" class="flag-img" style="vertical-align:middle;margin-right:4px;">';
+  }
 
-  // 特殊地区代码映射
+  // 特殊地区映射（可自行扩展）
   const specialCases = {
-    EU: '🇪🇺',
-    UN: '🇺🇳',
-    HK: '<img src="https://flagcdn.com/16x12/hk.png" alt="HK" class="flag-img" style="vertical-align:middle;margin-right:4px;">',
-    MO: '<img src="https://flagcdn.com/16x12/mo.png" alt="MO" class="flag-img" style="vertical-align:middle;margin-right:4px;">',
-    TW: '<img src="https://flagcdn.com/16x12/tw.png" alt="TW" class="flag-img" style="vertical-align:middle;margin-right:4px;">'
+    EU: 'eu',
+    UN: 'un',
+    HK: 'hk',
+    MO: 'mo',
+    TW: 'tw'
   };
 
   const normalizedCode = countryCode.toUpperCase();
-  if (specialCases[normalizedCode]) return specialCases[normalizedCode];
-
-  // 标准国家代码转 Emoji
-  try {
-    const emoji = String.fromCodePoint(...[...normalizedCode].map(c => 0x1F1E6 - 65 + c.charCodeAt(0)));
-    
-    // 检测浏览器是否支持彩色 Emoji
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    ctx.font = '32px "Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji", sans-serif';
-    const width = ctx.measureText(emoji).width;
-    if (width === 0) throw new Error('Emoji unsupported');
-
-    return emoji;
-  } catch {
-    // 回退为图片显示
-    return `<img src="https://flagcdn.com/16x12/${normalizedCode.toLowerCase()}.png" alt="${normalizedCode}" class="flag-img" style="vertical-align:middle;margin-right:4px;">`;
-  }
+  const flagCode = specialCases[normalizedCode] || normalizedCode.toLowerCase();
+  return `<img src="https://flagcdn.com/16x12/${flagCode}.png" alt="${normalizedCode}" class="flag-img" style="vertical-align:middle;margin-right:4px;">`;
 }
 
 // 生成主页HTML
@@ -501,7 +487,7 @@ async function generateHTML(mergeData, ratejson, sitename) {
             <td><span class="status-dot" style="background-color: ${statusColor};" title="${statusText}"></span></td>
             <td><span class="copy-ip" style="cursor: pointer;" onclick="copyToClipboard('${info.ip}')" title="点击复制">${info.ip}</span></td>
             <td>${info.asn}</td>
-            <td>${toLocaleEmoji(info.country_code)} ${info.country_code}</td>
+            <td>${toLocaleFlag(info.country_code)} ${info.country_code}</td>
             <td>${info.city}</td>
             <td><a href="${info.storeURL}" target="_blank" class="store-link">${info.store}</a></td>
             <td>${info.startday}</td>
@@ -549,12 +535,14 @@ function generateFormHTML(sitename, rows, ratejson) {
             .container {
                 width: 95%;
                 max-width: 1400px;
-                margin: 40px auto;
+                margin: 30px auto;
                 background-color: rgba(255, 255, 255, 0.6);
                 box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
                 border-radius: 8px;
                 overflow: auto;
-            }
+                display: flex;
+                flex-direction: column;
+              }
             .head {
                 display: flex; 
                 justify-content: 
@@ -562,6 +550,8 @@ function generateFormHTML(sitename, rows, ratejson) {
                 align-items: center; 
                 background-color: #2573b3;
                 padding: 20px 40px;
+                position: sticky;
+                top: 0;
             }
             h1 {
                 color: #fff;
@@ -601,6 +591,8 @@ function generateFormHTML(sitename, rows, ratejson) {
                 background-color: rgba(255, 255, 255, 0.6);
                 font-weight: bold;
                 color: #2573B3;
+                position: sticky;
+                top: 0;
             }
             td:nth-child(2) {
                 max-width: 160px;
@@ -615,6 +607,13 @@ function generateFormHTML(sitename, rows, ratejson) {
                 min-width: 180px;
                 overflow: hidden;
                 text-overflow: ellipsis;
+              }
+              footer p {
+                line-height: 0.9;
+                font-size: 0.75rem;
+              }
+              .container {
+                margin: 20px auto;
               }
             }
             .status-dot {
@@ -636,6 +635,7 @@ function generateFormHTML(sitename, rows, ratejson) {
               justify-content: center;
               align-items: center;
               flex-wrap: wrap;
+              padding: 3px 0;
               gap: 12px;
             }
             footer a {
