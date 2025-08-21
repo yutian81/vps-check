@@ -105,12 +105,12 @@ async function ipinfo_query(vpsjson) {
       })
     },
     {
-      name: 'ip.eooce',
-      urlBuilder: (ip) => `https://ip.eooce.com/${ip}`,
+      name: 'ip.beck8',
+      urlBuilder: (ip) => `https://ip.122911.xyz/api/ipinfo?ip=${ip}`,
       dataParser: (data) => ({
         country_code: data.country_code?.toUpperCase() ?? 'Unknown',
         city: data.city ?? 'Unknown',
-        asn: data.asn ?? 'Unknown'
+        asn: data.asn ? 'AS' + data.asn : 'Unknown'
       })
     }
   ];
